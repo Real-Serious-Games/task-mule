@@ -11,14 +11,14 @@ module.exports = function (config) {
 	var AsciiTable = require('ascii-table');
 	var validate = require('./validate');
 
+	var log = require('./log')(argv.verbose, argv.nocolors);
+
 	global.path = require('path');
 	global.exec = require('./exec')(nconf, log);
 	global.path = require('path');
 	global.fs = require('fs-extra');
 	global.quote = require('quote');
 	
-	var log = require('./log')(argv.verbose, argv.nocolors);
-
 	var buildFilePath = path.join(process.cwd(), "build.js");
 	var buildConfig = require(buildFilePath)(nconf, log, validate);
 
