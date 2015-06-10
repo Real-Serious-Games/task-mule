@@ -27,17 +27,14 @@ module.exports = function (config) {
 	nconf.use('memory');
 
 	nconf.argv();
-
-	buildConfig.init();
-	
 	var tasks = require('./auto-load.js')({}, log, validate, nconf);
 
 	if (requestedTaskName) {
+		buildConfig.init();
+
 	    tasks.invoke(requestedTaskName)
 	        .done(function () {
-	            if (!argv.keepTmpDir) {
-	                fs.deleteSync(tmpDir);
-	            }
+        		buildConfig.done();
 	        });
 	}
 	else if (argv.tasks) {

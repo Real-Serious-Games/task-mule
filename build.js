@@ -17,8 +17,18 @@ module.exports = function (config, log, validate) {
 			['What it is', 'example command line'],
 		],
 
+		//
+		// Initialse configuration.
+		//
 		init: function () {
-			//todo: set up config.
+			//todo: 
+		},
+
+		//
+		// Invoked when tasks have completed.
+		//
+		done: function () {
+			//todo:
 		},
 	};
 };
