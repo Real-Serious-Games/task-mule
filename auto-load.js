@@ -19,7 +19,7 @@ module.exports = function (autoLoadConfig, log, validate, config) {
     var taskMap = {};
     var tasksValidated = {}; // Remembers tasks that have been validated, so they aren't validated again.
     var tasksInvoked = {}; // Remembers tasks that have been invoked, so they aren't invoked again.
-    var tasksDir = autoLoadConfig.tasksDir || path.join(__dirname, "tasks");
+    var tasksDir = autoLoadConfig.tasksDir || path.join(process.cwd(), "tasks");
     var depsMap = {};
     
     var stripExt = function (fileName) {
