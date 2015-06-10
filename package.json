@@ -1,0 +1,26 @@
+{
+  "name": "task-mule",
+  "version": "1.0.0",
+  "description": "Yet another task runner",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Real-Serious-Games/task-mule.git"
+  },
+  "keywords": [
+    "task",
+    "runner",
+    "javascript",
+    "grunt",
+    "gulp"
+  ],
+  "author": "ashley.davis@realseriousgames.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Real-Serious-Games/task-mule/issues"
+  },
+  "homepage": "https://github.com/Real-Serious-Games/task-mule#readme"
+}
