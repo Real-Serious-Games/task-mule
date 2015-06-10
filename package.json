@@ -1,6 +1,6 @@
 {
   "name": "task-mule",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Yet another task runner",
   "main": "index.js",
   "scripts": {
@@ -10,6 +10,9 @@
     "type": "git",
     "url": "git+https://github.com/Real-Serious-Games/task-mule.git"
   },
+  "bin": {
+    "mongodb-rest": "./bin/mongodb-rest"
+  },  
   "keywords": [
     "task",
     "runner",
