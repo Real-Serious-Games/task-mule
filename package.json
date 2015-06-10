@@ -11,7 +11,7 @@
     "url": "git+https://github.com/Real-Serious-Games/task-mule.git"
   },
   "bin": {
-    "mongodb-rest": "./bin/mongodb-rest"
+    "task-mule": "./bin/task-mule"
   },  
   "keywords": [
     "task",
