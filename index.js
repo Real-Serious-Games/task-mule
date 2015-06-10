@@ -20,7 +20,7 @@ module.exports = function (config) {
 	var log = require('./log')(argv.verbose, argv.nocolors);
 
 	var buildFilePath = path.join(process.cwd(), "build.js");
-	var buildConfig = require(buildFilePath)({}, {}, {});
+	var buildConfig = require(buildFilePath)(nconf, log, validate);
 
 	var requestedTaskName = argv._[0];
 
@@ -28,7 +28,7 @@ module.exports = function (config) {
 
 	nconf.argv();
 
-	buildConfig.init(nconf, log, validate);
+	buildConfig.init();
 	
 	var tasks = require('./auto-load.js')({}, log, validate, nconf);
 
