@@ -8,7 +8,7 @@ module.exports = function (config, log) {
 
 	return function (cmd, options) {
 
-		var exec = require('promised-exec');
+		var exec = require('./promised-exec');
 		var opts = options || {};
 
 		log.verbose("Running command: " + cmd);

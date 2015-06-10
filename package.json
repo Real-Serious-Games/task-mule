@@ -1,6 +1,6 @@
 {
   "name": "task-mule",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "Yet another task runner",
   "main": "index.js",
   "scripts": {
@@ -34,7 +34,6 @@
     "linq": "^3.0.4-beta",
     "nconf": "^0.7.1",
     "promise": "^7.0.1",
-    "promised-exec": "^1.0.1",
     "quote": "^0.4.0",
     "statman": "^0.1.5",
     "string": "^3.2.0",
