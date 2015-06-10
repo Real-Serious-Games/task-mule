@@ -2,9 +2,7 @@
 
 module.exports = function (config) {
 	
-	var buildFilePath = __dirname + "/build.js";
-	console.log(buildFilePath);
-	var result = require(buildFilePath)({}, {}, {});
+	var result = require("./build.js")({}, {}, {});
 	console.log(result.test);
 };
 
