@@ -1,2 +1,6 @@
+'use strict';
 
-console.log("Hello");
+module.exports = function (config) {
+	console.log("Hello");
+};
+
