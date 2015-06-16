@@ -28,6 +28,7 @@
   "homepage": "https://github.com/Real-Serious-Games/task-mule#readme",
   "dependencies": {
     "ascii-table": "0.0.8",
+    "ascii-tree": "^0.1.1",
     "chalk": "^1.0.0",
     "fs-extra": "^0.19.0",
     "globby": "^2.0.0",
