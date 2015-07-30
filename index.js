@@ -20,6 +20,7 @@ module.exports = function (config) {
 	global.quote = require('quote');
 
 	var buildFilePath = path.join(process.cwd(), "build.js");
+	
 	var requestedTaskName = argv._[0];
 	if (requestedTaskName === 'init') {
 		if (fs.exists(buildFilePath)) {
@@ -30,7 +31,7 @@ module.exports = function (config) {
 		// Auto create build.js.
 		var defaultBuildJs = path.join(__dirname, 'build.js');
 		fs.copySync(defaultBuildJs, buildFilePath);
-		log.info('Created new 'build.js' at ' + buildFilePath);
+		log.info("Created new 'build.js' at " + buildFilePath);
 		process.exit(0);
 	}
 
