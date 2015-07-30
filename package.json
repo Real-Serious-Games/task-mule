@@ -1,6 +1,6 @@
 {
   "name": "task-mule",
-  "version": "1.0.16",
+  "version": "1.0.17",
   "description": "Yet another task runner",
   "main": "index.js",
   "scripts": {

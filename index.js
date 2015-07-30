@@ -20,14 +20,27 @@ module.exports = function (config) {
 	global.quote = require('quote');
 
 	var buildFilePath = path.join(process.cwd(), "build.js");
+	var requestedTaskName = argv._[0];
+	if (requestedTaskName === 'init') {
+		if (fs.exists(buildFilePath)) {
+			log.error("Can't overwrite existing 'build.js'.");
+			process.exit(1);
+		}
+
+		// Auto create build.js.
+		var defaultBuildJs = path.join(__dirname, 'build.js');
+		fs.copySync(defaultBuildJs, buildFilePath);
+		log.info('Created new 'build.js' at ' + buildFilePath);
+		process.exit(0);
+	}
+
 	if (!fs.exists(buildFilePath)) {
-		log.error('"build.js" not found, please run task-mule in a directory that has this file.');
+		log.error("'build.js' not found, please run task-mule in a directory that has this file.");
+		log.info("Run 'task-mule init' to create a default 'build.js'.")
 		process.exit(1);
 	}
-	
-	var buildConfig = require(buildFilePath)(nconf, log, validate);
 
-	var requestedTaskName = argv._[0];
+	var buildConfig = require(buildFilePath)(nconf, log, validate);
 
 	nconf.use('memory');
 
