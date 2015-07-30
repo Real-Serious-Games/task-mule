@@ -18,8 +18,13 @@ module.exports = function (config) {
 	global.path = require('path');
 	global.fs = require('fs-extra');
 	global.quote = require('quote');
-	
+
 	var buildFilePath = path.join(process.cwd(), "build.js");
+	if (!fs.exists(buildFilePath)) {
+		log.error('"build.js" not found, please run task-mule in a directory that has this file.');
+		process.exit(1);
+	}
+	
 	var buildConfig = require(buildFilePath)(nconf, log, validate);
 
 	var requestedTaskName = argv._[0];
