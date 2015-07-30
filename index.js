@@ -41,6 +41,13 @@ module.exports = function (config) {
 		process.exit(1);
 	}
 
+	var tasksDirectory = path.join(process.cwd(), 'tasks');
+	if (!fs.existsSync(tasksDirectory)) {
+		log.error("'tasks' directory doesn't exist.");
+		log.info("Run 'task-mule create-task <task-name> to create your first task.");
+		process.exit(1);
+	}
+
 	var buildConfig = require(buildFilePath)(nconf, log, validate);
 
 	nconf.use('memory');
@@ -61,7 +68,7 @@ module.exports = function (config) {
 	    process.exit(1);
 	} 
 	else { 
-	    log.warn("Usage: task-mule <task-name> [options]\n");
+	    log.info("Usage: task-mule <task-name> [options]\n");
 
 	    var optionsTable = new AsciiTable('Options');
 	    optionsTable
