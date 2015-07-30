@@ -21,14 +21,14 @@ module.exports = function (config, log, validate) {
 		// Initialse configuration.
 		//
 		init: function () {
-			//todo: 
+			//todo: Pre-build initialisation.
 		},
 
 		//
 		// Invoked when tasks have completed.
 		//
 		done: function () {
-			//todo:
+			//todo: Post-build cleanup.
 		},
 	};
 };

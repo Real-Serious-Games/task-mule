@@ -23,7 +23,7 @@ module.exports = function (config) {
 	
 	var requestedTaskName = argv._[0];
 	if (requestedTaskName === 'init') {
-		if (fs.exists(buildFilePath)) {
+		if (fs.existsSync(buildFilePath)) {
 			log.error("Can't overwrite existing 'build.js'.");
 			process.exit(1);
 		}
@@ -35,7 +35,7 @@ module.exports = function (config) {
 		process.exit(0);
 	}
 
-	if (!fs.exists(buildFilePath)) {
+	if (!fs.existsSync(buildFilePath)) {
 		log.error("'build.js' not found, please run task-mule in a directory that has this file.");
 		log.info("Run 'task-mule init' to create a default 'build.js'.")
 		process.exit(1);
