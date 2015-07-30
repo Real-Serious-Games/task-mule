@@ -1,6 +1,6 @@
 {
   "name": "task-mule",
-  "version": "1.0.20",
+  "version": "1.0.21",
   "description": "Yet another task runner",
   "main": "index.js",
   "scripts": {
@@ -38,7 +38,7 @@
     "q": "^1.4.1",
     "quote": "^0.4.0",
     "statman": "^0.1.5",
-    "string": "^3.2.0",
+    "string": "^3.3.0",
     "sugar": "^1.4.1",
     "yargs": "^3.10.0"
   }

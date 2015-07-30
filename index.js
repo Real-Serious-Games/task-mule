@@ -10,6 +10,7 @@ module.exports = function (config) {
 	var chalk = require('chalk');
 	var AsciiTable = require('ascii-table');
 	var validate = require('./validate');
+	var S = require('string');
 
 	var log = require('./log')(argv.verbose, argv.nocolors);
 
@@ -20,6 +21,7 @@ module.exports = function (config) {
 	global.quote = require('quote');
 
 	var buildFilePath = path.join(process.cwd(), "build.js");
+	var tasksDirectory = path.join(process.cwd(), 'tasks');
 	
 	var requestedTaskName = argv._[0];
 	if (requestedTaskName === 'init') {
@@ -34,6 +36,35 @@ module.exports = function (config) {
 		log.info("Created new 'build.js' at " + buildFilePath);
 		process.exit(0);
 	}
+	else if (requestedTaskName === 'create-task') {
+		var newTaskName = argv._[1];
+		if (!newTaskName) {
+			log.error("Task name not specified.");
+			process.exit(1);
+		}
+
+		if (!S(newTaskName.toLowerCase()).endsWith(".js")) {
+			if (newTaskName[newTaskName.length-1] === '.') {
+				// Trim final period.
+				newTaskName = newTaskName.substring(0, newTaskName.length-1);
+			}
+			
+			// Auto add extension.
+			newTaskName += ".js";
+		}
+
+		var newTaskFilePath = path.join(tasksDirectory, newTaskName);
+		if (fs.existsSync(newTaskFilePath)) {
+			log.error("Can't create task, file already exists: " + newTaskFilePath);
+			process.exit(1);
+		}
+
+		var defaultTaskFile = path.join(__dirname, 'default-task.js');
+		fs.copySync(defaultTaskFile, newTaskFilePath);
+		log.info("Created new task file at " + newTaskFilePath);
+
+		process.exit(0);
+	}
 
 	if (!fs.existsSync(buildFilePath)) {
 		log.error("'build.js' not found, please run task-mule in a directory that has this file.");
@@ -41,7 +72,6 @@ module.exports = function (config) {
 		process.exit(1);
 	}
 
-	var tasksDirectory = path.join(process.cwd(), 'tasks');
 	if (!fs.existsSync(tasksDirectory)) {
 		log.error("'tasks' directory doesn't exist.");
 		log.info("Run 'task-mule create-task <task-name> to create your first task.");
@@ -67,7 +97,7 @@ module.exports = function (config) {
 	    tasks.listTasks();
 	    process.exit(1);
 	} 
-	else { 
+	else {
 	    log.info("Usage: task-mule <task-name> [options]\n");
 
 	    var optionsTable = new AsciiTable('Options');
