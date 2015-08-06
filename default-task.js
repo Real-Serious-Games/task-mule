@@ -1,6 +1,6 @@
 "use strict";
 
-module.exports = function (log, validate, config) {
+module.exports = function (log, validate) {
     
     return {
         
@@ -13,7 +13,7 @@ module.exports = function (log, validate, config) {
         // Validate configuration for the task.
         // Throw an exception to fail the build.
         //
-        validate: function () {
+        validate: function (config) {
             //todo:
         },
         
@@ -22,7 +22,7 @@ module.exports = function (log, validate, config) {
         // Throw an exception to fail the build.
         // Return a promise for async tasks.
         //
-        invoke: function () {
+        invoke: function (config) {
             //todo:
         },
     };

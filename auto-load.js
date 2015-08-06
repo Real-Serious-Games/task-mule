@@ -1,3 +1,4 @@
+var assert = require('chai').assert;
 var fs = require("fs");
 var path = require('path');
 var E = require('linq');
@@ -10,6 +11,11 @@ var sugar = require('sugar');
 // Automatic loading of Grunt tasks from a collection of files.
 //
 module.exports = function (autoLoadConfig, log, validate, config) {
+
+    assert.isObject(autoLoadConfig);
+    assert.isObject(log);
+    assert.isObject(validate);
+    assert.isObject(config);
 
     // 
     // Load in all tasks from files.
@@ -35,7 +41,7 @@ module.exports = function (autoLoadConfig, log, validate, config) {
             var itemName = items[i];
             var relativeItemPath = path.join(subDirPath, itemName);
             var fullItemPath = path.join(dirPath, itemName);
-            var task = new Task(itemName, relativeItemPath, fullItemPath, parentTask, log, validate, config, taskMap);
+            var task = new Task(itemName, relativeItemPath, fullItemPath, parentTask, log, validate, taskMap, depsMap, tasksValidated, tasksInvoked);
             tasks.push(task);
             taskMap[task.fullName()] = task;                
 
@@ -60,7 +66,7 @@ module.exports = function (autoLoadConfig, log, validate, config) {
     walkDirs(tasksDir);
     
     tasks.forEach(function (task) {
-        task.resolveDependencies();
+        task.resolveDependencies(config);
     });
 
     return {
@@ -80,9 +86,9 @@ module.exports = function (autoLoadConfig, log, validate, config) {
                 stopWatch.start();
             }
 
-            return requestedTask.validate()
+            return requestedTask.validate(config)
                 .then(function () {
-                    return requestedTask.invoke();
+                    return requestedTask.invoke(config);
                 })
                 .then(function () {
                 

@@ -22,7 +22,7 @@ var stripExt = function (fileName) {
 //
 // Class that represents a task loaded from a file.
 //
-function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validate, config, taskMap) {
+function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validate, taskMap, depsMap, tasksValidated, tasksInvoked) {
 
     assert.isString(fileName);
     assert.isString(relativeFilePath);
@@ -32,8 +32,10 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
     }
     assert.isObject(log);
     assert.isObject(validate);
-    assert.isObject(config);
-    assert.isObject(taskMap);    
+    assert.isObject(taskMap);
+    assert.isObject(depsMap);
+    assert.isObject(tasksValidated);
+    assert.isObject(tasksInvoked);    
 
     var self = this;
     self.fileName = fileName;
@@ -52,7 +54,7 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
             throw new Error('Task module ' + fullFilePath + ' should export a function.');
         }
         else {
-            self.module = moduleLoadFunction(log, validate, config);
+            self.module = moduleLoadFunction(log, validate);
         }
     }
 
@@ -86,7 +88,9 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
     //
     // Get the names of tasks that a particular task is dependent on.
     //
-    self.getDepTaskNames = function () {
+    self.getDepTaskNames = function (config) {
+
+        assert.isObject(config);
 
         if (!self.module) {
             return [];
@@ -99,7 +103,7 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
         var depNames;
         
         if (Object.isFunction(self.module.dependsOn)) {
-            depNames = self.module.dependsOn();
+            depNames = self.module.dependsOn(config);
         }
         else {
             depNames = self.module.dependsOn;
@@ -125,13 +129,14 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
     //
     // Resolve dependencies for the task.
     //       
-    self.resolveDependencies = function () {
-        try
-        {
-            self.dependencies = self.getDepTaskNames().map(resolveDep);
+    self.resolveDependencies = function (config) {
+
+        assert.isObject(config);
+
+        try {
+            self.dependencies = self.getDepTaskNames(config).map(resolveDep);
         }
-        catch (e)
-        {
+        catch (e) {
             log.error('Exception while resolving dependencies for task: ' + self.fullName());
             throw e;
         }
@@ -140,7 +145,9 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
     //
     // Validate the task.
     //
-    self.validate = function () {
+    self.validate = function (config) {
+
+        assert.isObject(config);
 
         var taskName = self.fullName();
 
@@ -153,7 +160,7 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
                 function (prevPromise, depTask) {
                     return prevPromise
                         .then(function () { 
-                            return depTask.validate();  //todo: define task-specific configuration before validation.
+                            return depTask.validate(config);  //todo: define task-specific configuration before validation.
                         });
                 }
             )
@@ -176,7 +183,7 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
                 }
 
                 try {                        
-                    var resultingPromise = self.module.validate.apply(this);
+                    var resultingPromise = self.module.validate.apply(this, [config]);
                     if (resultingPromise) {
                         return resultingPromise.then(function (result) {
                             //log.info("Validated " + taskName);
@@ -197,7 +204,9 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
     //
     // Invoke the task.
     //
-    self.invoke = function () {
+    self.invoke = function (config) {
+
+        assert.isObject(config);
 
         var taskName = self.fullName();
 
@@ -210,7 +219,7 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
                 function (prevPromise, depTask) {
                     return prevPromise
                         .then(function () { 
-                            return depTask.invoke(); 
+                            return depTask.invoke(config); 
                         });
                 }
             )
@@ -241,7 +250,7 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
                     stopWatch.start();
                 }
 
-                    var resultingPromise = self.module.invoke.apply(this);
+                    var resultingPromise = self.module.invoke.apply(this, [config]);
                     if (resultingPromise) {
                         return resultingPromise.then(function (result) {
                             var ouputMessage = taskName;
