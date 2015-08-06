@@ -22,13 +22,14 @@ var stripExt = function (fileName) {
 //
 // Class that represents a task loaded from a file.
 //
-function Task (fileName, relativeFilePath, fullFilePath, parentTask) {
+function Task(fileName, relativeFilePath, fullFilePath, parentTask, log) {
     assert.isString(fileName);
     assert.isString(relativeFilePath);
     assert.isString(fullFilePath);
     if (parentTask) {
         assert.isObject(parentTask);
     }
+    assert.isObject(log);
 
     var self = this;
     self.fileName = fileName;
