@@ -11,7 +11,7 @@ var Module           = require('module')
   ;
 
 Module._load = function(request, parent) {
-  var fullFilePath = Module._resolveFilename(request, parent);
+  var fullFilePath = request;
 
   if (!intercept.hasOwnProperty(fullFilePath)) {
     return originalLoader.apply(this, arguments);
@@ -27,12 +27,12 @@ function startMocking(path, mockExport) {
     mockExport = require(getFullPath(mockExport, calledFrom));
   }
 
-  intercept[getFullPath(path, calledFrom)] = mockExport;
+  intercept[path] = mockExport;
 }
 
 function stopMocking(path) {
   var calledFrom = callerId.getData().filePath;
-  delete intercept[getFullPath(path, calledFrom)];
+  delete intercept[path];
 }
 
 function getFullPath(path, calledFrom) {
