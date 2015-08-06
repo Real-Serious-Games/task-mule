@@ -23,6 +23,7 @@ var stripExt = function (fileName) {
 // Class that represents a task loaded from a file.
 //
 function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validate, config, taskMap) {
+
     assert.isString(fileName);
     assert.isString(relativeFilePath);
     assert.isString(fullFilePath);
@@ -32,8 +33,7 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
     assert.isObject(log);
     assert.isObject(validate);
     assert.isObject(config);
-    assert.isObject(taskMap);
-    
+    assert.isObject(taskMap);    
 
     var self = this;
     self.fileName = fileName;
@@ -45,9 +45,14 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
     self.childrenMap = {};
 
     if (S(fullFilePath).endsWith(".js")) {
-        var loaded = require(fullFilePath);
-        if (loaded && Object.isFunction(loaded)) {
-            self.module = loaded(log, validate, config);
+        var moduleLoadFunction = require(fullFilePath);
+        if (!moduleLoadFunction || 
+            !Object.isFunction(moduleLoadFunction)) {
+
+            throw new Error('Task module ' + fullFilePath + ' should export a function.');
+        }
+        else {
+            self.module = moduleLoadFunction(log, validate, config);
         }
     }
 
