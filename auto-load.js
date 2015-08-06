@@ -2,8 +2,6 @@ var fs = require("fs");
 var path = require('path');
 var E = require('linq');
 var S = require('string');
-var Promise = require('promise');
-var sugar = require('sugar');
 var metrics = require('statman');
 var Task = require('./task');
 
@@ -23,15 +21,6 @@ module.exports = function (autoLoadConfig, log, validate, config) {
     var tasksDir = autoLoadConfig.tasksDir || path.join(process.cwd(), "tasks");
     var depsMap = {};
     
-    var stripExt = function (fileName) {
-        if (S(fileName).endsWith('.js')) {
-            return fileName.slice(0, -3); // Hacky: Specific for .js files.
-        }
-        else {
-            return fileName;
-        }
-    };
-
     //
     // Sync walk a directory structure and call the callback for each file.
     //

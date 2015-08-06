@@ -1,7 +1,33 @@
+var assert = require('chai').assert;
+var E = require('linq');
+var S = require('string');
+var metrics = require('statman');
+var Promise = require('promise');
+
+//
+// Strips an extension from a filename.
+//
+var stripExt = function (fileName) {
+    assert.isString(fileName);
+
+    if (S(fileName).endsWith('.js')) {
+        return fileName.slice(0, -3); // Hacky: Specific for .js files.
+    }
+    else {
+        return fileName;
+    }
+};
+
 //
 // Class that represents a task loaded from a file.
 //
 function Task (fileName, relativeFilePath, fullFilePath, parentTask) {
+    assert.isString(fileName);
+    assert.isString(relativeFilePath);
+    assert.isString(fullFilePath);
+    if (parentTask) {
+        assert.isObject(parentTask);
+    }
 
     var self = this;
     self.fileName = fileName;
