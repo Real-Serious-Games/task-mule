@@ -3,6 +3,7 @@ var E = require('linq');
 var S = require('string');
 var metrics = require('statman');
 var Promise = require('promise');
+var sugar = require('sugar');
 
 //
 // Strips an extension from a filename.

@@ -4,6 +4,7 @@ var E = require('linq');
 var S = require('string');
 var metrics = require('statman');
 var Task = require('./task');
+var sugar = require('sugar');
 
 //
 // Automatic loading of Grunt tasks from a collection of files.
