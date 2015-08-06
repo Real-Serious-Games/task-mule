@@ -35,7 +35,7 @@ module.exports = function (autoLoadConfig, log, validate, config) {
             var itemName = items[i];
             var relativeItemPath = path.join(subDirPath, itemName);
             var fullItemPath = path.join(dirPath, itemName);
-            var task = new Task(itemName, relativeItemPath, fullItemPath, parentTask, log);
+            var task = new Task(itemName, relativeItemPath, fullItemPath, parentTask, log, validate, config);
             tasks.push(task);
             taskMap[task.fullName()] = task;                
 
