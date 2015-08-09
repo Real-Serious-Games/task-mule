@@ -8,7 +8,6 @@ module.exports = function (config) {
 	var fs = require('fs-extra');
 	var globby = require('globby');
 	var chalk = require('chalk');
-	var AsciiTable = require('ascii-table');
 	var validate = require('./validate');
 	var S = require('string');
 
@@ -83,18 +82,18 @@ module.exports = function (config) {
 	nconf.use('memory');
 
 	nconf.argv();
-	var tasks = require('./task-loader.js')({}, log, validate, nconf);
+	var taskRunner = require('./task-loader.js')({}, log, validate, nconf);
 
 	if (requestedTaskName) {
 		buildConfig.init();
 
-	    tasks.invoke(requestedTaskName)
+	    taskRunner.runTask(requestedTaskName, nconf)
 	        .done(function () {
         		buildConfig.done();
 	        });
 	}
 	else if (argv.tasks) {
-	    tasks.listTasks();
+	    taskRunner.listTasks();
 	    process.exit(1);
 	} 
 	else {

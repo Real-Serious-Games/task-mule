@@ -22,7 +22,7 @@ var stripExt = function (fileName) {
 //
 // Class that represents a task loaded from a file.
 //
-function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validate, taskMap, depsMap, tasksValidated, tasksInvoked) {
+function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validate, taskRunner) {
 
     assert.isString(fileName);
     assert.isString(relativeFilePath);
@@ -32,10 +32,8 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
     }
     assert.isObject(log);
     assert.isObject(validate);
-    assert.isObject(taskMap);
-    assert.isObject(depsMap);
-    assert.isObject(tasksValidated);
-    assert.isObject(tasksInvoked);    
+    assert.isObject(taskRunner);    
+    assert.isFunction(taskRunner.getTask);
 
     var self = this;
     self.fileName = fileName;
@@ -113,28 +111,20 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
     };
 
     //
-    // Resolve a single named task.
-    //    
-    var resolveDep = function (taskName) {
-        var resolvedTask = taskMap[taskName];
-        if (!resolvedTask) {
-            throw new Error("Task not found: " + taskName);
-        }
-
-        depsMap[taskName] = resolvedTask;
-        
-        return resolvedTask;
-    };
-
-    //
     // Resolve dependencies for the task.
     //       
     self.resolveDependencies = function (config) {
 
         assert.isObject(config);
+        assert.isObject(taskRunner);
+        assert.isFunction(taskRunner.getTask);
 
         try {
-            self.dependencies = self.getDepTaskNames(config).map(resolveDep);
+            self.dependencies = E.from(self.getDepTaskNames(config))
+                .select(function (taskName) {
+                    return taskRunner.getTask(taskName);
+                })
+                .toArray();
         }
         catch (e) {
             log.error('Exception while resolving dependencies for task: ' + self.fullName());
@@ -145,9 +135,10 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
     //
     // Validate the task.
     //
-    self.validate = function (config) {
+    self.validate = function (config, tasksValidated) {
 
         assert.isObject(config);
+        assert.isObject(tasksValidated);
 
         var taskName = self.fullName();
 
@@ -160,7 +151,7 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
                 function (prevPromise, depTask) {
                     return prevPromise
                         .then(function () { 
-                            return depTask.validate(config);  //todo: define task-specific configuration before validation.
+                            return depTask.validate(config, tasksValidated);  //todo: define task-specific configuration before validation.
                         });
                 }
             )
@@ -204,9 +195,10 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
     //
     // Invoke the task.
     //
-    self.invoke = function (config) {
+    self.invoke = function (config, tasksInvoked) {
 
         assert.isObject(config);
+        assert.isObject(tasksInvoked);
 
         var taskName = self.fullName();
 
@@ -219,7 +211,7 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
                 function (prevPromise, depTask) {
                     return prevPromise
                         .then(function () { 
-                            return depTask.invoke(config); 
+                            return depTask.invoke(config, tasksInvoked); 
                         });
                 }
             )
