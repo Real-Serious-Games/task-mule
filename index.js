@@ -83,7 +83,7 @@ module.exports = function (config) {
 	nconf.use('memory');
 
 	nconf.argv();
-	var tasks = require('./auto-load.js')({}, log, validate, nconf);
+	var tasks = require('./task-loader.js')({}, log, validate, nconf);
 
 	if (requestedTaskName) {
 		buildConfig.init();
