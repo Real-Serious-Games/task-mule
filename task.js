@@ -52,7 +52,7 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
             throw new Error('Task module ' + fullFilePath + ' should export a function.');
         }
         else {
-            self.module = moduleLoadFunction(log, validate);
+            self.module = moduleLoadFunction(log, validate, taskRunner);
         }
     }
 

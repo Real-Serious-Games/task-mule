@@ -89,6 +89,22 @@ module.exports = function (config) {
 		buildConfig.init();
 
 	    taskRunner.runTask(requestedTaskName, nconf)
+            .catch(function (err) {
+                
+                log.error('Build failed.');
+                
+                if (err.message) {
+                    log.warn(err.message);
+                }
+
+                if (err.stack) {
+                    log.warn(err.stack);
+                }
+                else {
+                    log.warn('no stack');
+                }
+                process.exit(1);
+            })
 	        .done(function () {
         		buildConfig.done();
 	        });
