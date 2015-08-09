@@ -10,6 +10,7 @@ module.exports = function (config) {
 	var chalk = require('chalk');
 	var validate = require('./validate');
 	var S = require('string');
+	var AsciiTable = require('ascii-table');
 
 	var log = require('./log')(argv.verbose, argv.nocolors);
 
