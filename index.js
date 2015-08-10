@@ -20,8 +20,9 @@ module.exports = function (config) {
 	global.fs = require('fs-extra');
 	global.quote = require('quote');
 
-	var buildFilePath = path.join(process.cwd(), "build.js");
-	var tasksDirectory = path.join(process.cwd(), 'tasks');
+	var workingDirectory = process.cwd();
+	var buildFilePath = path.join(workingDirectory, "build.js");
+	var tasksDirectory = path.join(workingDirectory, 'tasks');
 	
 	var requestedTaskName = argv._[0];
 	if (requestedTaskName === 'init') {
@@ -83,6 +84,17 @@ module.exports = function (config) {
 	nconf.use('memory');
 
 	nconf.argv();
+
+	var defaultConfigFilePath = path.join(workingDirectory, 'config.json');
+	if (fs.existsSync(defaultConfigFilePath)) {
+
+		log.verbose("Loading config from file: " + defaultConfigFilePath);
+
+		nconf.file({
+			file: defaultConfigFilePath,
+		});
+	}
+
 	var taskRunner = require('./task-loader.js')({}, log, validate, nconf);
 
 	if (requestedTaskName) {
