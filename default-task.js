@@ -16,6 +16,13 @@ module.exports = function (log, validate) {
         validate: function (config) {
             //todo:
         },
+
+        //
+        // Configure prior to invoke dependencies for this task.
+        //
+        configure: function (config) {
+            //todo:
+        },
         
         //
         // Invoke the task. Peform the operations required of the task.

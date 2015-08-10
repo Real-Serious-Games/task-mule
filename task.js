@@ -4,6 +4,7 @@ var S = require('string');
 var metrics = require('statman');
 var Promise = require('promise');
 var sugar = require('sugar');
+var Q = require('q');
 
 //
 // Strips an extension from a filename.
@@ -145,16 +146,19 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
         //
         // Run sequential dependencies.
         //
-        return E.from(self.dependencies)
-            .aggregate(
-                Promise.resolve(), // Starting promise.
-                function (prevPromise, depTask) {
-                    return prevPromise
-                        .then(function () { 
-                            return depTask.validate(config, tasksValidated);  //todo: define task-specific configuration before validation.
-                        });
-                }
-            )
+        return self.configure(config)
+            .then(function () {
+                return E.from(self.dependencies)
+                    .aggregate(
+                        Promise.resolve(), // Starting promise.
+                        function (prevPromise, depTask) {
+                            return prevPromise
+                                .then(function () { 
+                                    return depTask.validate(config, tasksValidated);  //todo: define task-specific configuration before validation.
+                                });
+                        }
+                    );
+            })
             .then(function () {
                 if (tasksValidated[taskName]) { //todo: include the hash code here for the task and it's configuration.
                     // Skip tasks that have already been satisfied.
@@ -190,8 +194,25 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
                     throw e;
                 }
             });  
-    },
-    
+    };
+
+    //
+    // Configure the task.
+    //
+    self.configure = function (config) {
+
+        assert.isObject(config);
+
+        if (self.module.configure) {
+            var promise = self.module.configure.apply(this, [config])
+            if (promise) {
+                return promise;
+            }
+        }
+
+        return Q();
+    };
+
     //
     // Invoke the task.
     //
@@ -205,16 +226,19 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
         //
         // Run sequential dependencies.
         //
-        return E.from(self.dependencies)
-            .aggregate(
-                Promise.resolve(), // Starting promise.
-                function (prevPromise, depTask) {
-                    return prevPromise
-                        .then(function () { 
-                            return depTask.invoke(config, tasksInvoked); 
-                        });
-                }
-            )
+        return self.configure(config)
+            .then(function () {
+                return E.from(self.dependencies)
+                    .aggregate(
+                        Promise.resolve(), // Starting promise.
+                        function (prevPromise, depTask) {
+                            return prevPromise
+                                .then(function () { 
+                                    return depTask.invoke(config, tasksInvoked); 
+                                });
+                        }
+                    );
+            })
             .then(function () {
                 if (tasksInvoked[taskName]) {
                     // Skip tasks that have already been satisfied.
@@ -236,11 +260,11 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
                 }
 
                 try {
-                var stopWatch = new metrics.Stopwatch();
+                    var stopWatch = new metrics.Stopwatch();
                 
-                if (config.get('timed')) {
-                    stopWatch.start();
-                }
+                    if (config.get('timed')) {
+                        stopWatch.start();
+                    }
 
                     var resultingPromise = self.module.invoke.apply(this, [config]);
                     if (resultingPromise) {
