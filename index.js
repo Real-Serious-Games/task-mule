@@ -11,11 +11,15 @@ module.exports = function (config) {
 	var validate = require('./validate');
 	var S = require('string');
 	var AsciiTable = require('ascii-table');
+	var childProcessPromise = require('child-process-promise')
 
 	var log = require('./log')(argv.verbose, argv.nocolors);
 
 	global.path = require('path');
-	global.exec = require('./exec')(nconf, log);
+
+	global.oldExec = require('./exec')(nconf, log); //fio:
+	global.exec = childProcessPromise.exec;
+	global.spawn = childProcessPromise.spawn;
 	global.path = require('path');
 	global.fs = require('fs-extra');
 	global.quote = require('quote');
