@@ -30,7 +30,7 @@ module.exports = function (log) {
             var stdout = '';
             var stderr = ''
 
-            var cp = spawn(command, args);
+            var cp = spawn(command, args, options);
 
             cp.stdout.on('data', function (data) {
                 var str = data.toString();
