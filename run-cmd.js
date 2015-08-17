@@ -27,7 +27,7 @@ module.exports = function (log) {
 
         options = options || {};
 
-        log.verbose("Running cmd: " + command + " " + args.join(', '));
+        log.verbose("Running cmd: " + command + " " + args.join(' '));
 
         return Q.Promise(function (resolve, reject) {
 
