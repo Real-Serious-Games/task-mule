@@ -17,6 +17,10 @@ module.exports = function (log) {
         if (args) {
             assert.isArray(args);
         }
+        else {
+            args = [];
+        }
+        
         if (options) {
             assert.isObject(options);
         }
