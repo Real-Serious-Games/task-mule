@@ -6,7 +6,6 @@ describe('Task', function () {
 
 	var mockLog = null;
 	var mockValidate = null;
-	var mockConfig = null;
 	var mockTaskRunner = null;
 
 	var testObject = null;
@@ -14,8 +13,10 @@ describe('Task', function () {
 	var init = function (mockTaskModule) {
 		mockLog = {};
 		mockValidate = {};
-		mockConfig = {};
-		mockTaskRunner = {};
+		mockTaskRunner = {
+			getTask: function () {
+			},
+		};
 
 		var fullFilePath = 'blah/foo/test.js';
 
@@ -23,7 +24,7 @@ describe('Task', function () {
 
 		var Task = require('../task');
 
-		testObject = new Task('test.js', 'foo/test.js', fullFilePath, null, mockLog, mockValidate, mockConfig, mockTaskRunner);
+		testObject = new Task('test.js', 'foo/test.js', fullFilePath, null, mockLog, mockValidate, mockTaskRunner);
 	};
 
 	afterEach(function () {
