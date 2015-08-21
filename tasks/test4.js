@@ -7,8 +7,23 @@ module.exports = function (log, validate) {
         description: "<description of your task>",
         
         dependsOn: [
-            "test2",
-            "test3",
+            "test2", 
+            {
+                task: "test3",
+                configure: function (config) {
+                    return {
+                        foo: 'bar',
+                    };
+                },
+            },
+            {
+                task: "test3",
+                configure: function (config) {
+                    return {
+                        one: 2,
+                    };
+                },
+            },            
         ], 
 
         //

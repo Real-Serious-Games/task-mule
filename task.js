@@ -6,6 +6,7 @@ var Promise = require('promise');
 var sugar = require('sugar');
 var Q = require('q');
 var util = require('util');
+var hash = require('es-hash');
 
 //
 // Strips an extension from a filename.
@@ -164,13 +165,15 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
     //
     // Validate the task.
     //
-    self.validate = function (config, tasksValidated) {
+    self.validate = function (configOverride, config, tasksValidated) {
 
+        assert.isObject(configOverride);
         assert.isObject(config);
         assert.isObject(tasksValidated);
 
         var taskName = self.fullName();
-        if (tasksValidated[taskName]) { //todo: include the hash code here for the task and it's configuration.
+        var taskKey = taskName + '_' + hash(configOverride);
+        if (tasksValidated[taskKey]) { //todo: include the hash code here for the task and it's configuration.
             // Skip tasks that have already been satisfied.
             return Promise.resolve();
         }
@@ -188,16 +191,16 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
                                 .then(function () {
                                     return dependency.configure(config);
                                 })
-                                .then(function (depConfig) { 
-                                    assert.isObject(depConfig);
+                                .then(function (configOverride) { 
+                                    assert.isObject(configOverride);
 
-                                    return dependency.resolvedTask.validate(config, tasksValidated);
+                                    return dependency.resolvedTask.validate(configOverride, config, tasksValidated);
                                 });
                         }
                     );
             })
             .then(function () {
-                tasksValidated[taskName] = true; // Make that the task has been invoked.
+                tasksValidated[taskKey] = true; // Make that the task has been invoked.
 
                 //log.info("Validating " + taskName);
 
@@ -248,13 +251,15 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
     //
     // Invoke the task.
     //
-    self.invoke = function (config, tasksInvoked) {
+    self.invoke = function (configOverride, config, tasksInvoked) {
 
+        assert.isObject(configOverride);
         assert.isObject(config);
         assert.isObject(tasksInvoked);
 
         var taskName = self.fullName();
-        if (tasksInvoked[taskName]) { //todo: add config key here.
+        var taskKey = taskName + '_' + hash(configOverride);
+        if (tasksInvoked[taskKey]) { //todo: add config key here.
             // Skip tasks that have already been satisfied.
             return Promise.resolve();
         }
@@ -272,16 +277,16 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
                                 .then(function () { 
                                     return dependency.configure(config); 
                                 })
-                                .then(function (depConfig) { 
-                                    assert.isObject(depConfig);
+                                .then(function (configOverride) { 
+                                    assert.isObject(configOverride);
 
-                                    return dependency.resolvedTask.invoke(config, tasksInvoked); 
+                                    return dependency.resolvedTask.invoke(configOverride, config, tasksInvoked); 
                                 });
                         }
                     );
             })
             .then(function () {
-                tasksInvoked[taskName] = true; // Make that the task has been invoked.
+                tasksInvoked[taskKey] = true; // Make that the task has been invoked.
 
                 if (config.get('verbose')) {
                     log.info("Running " + taskName);

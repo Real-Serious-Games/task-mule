@@ -9,6 +9,7 @@ module.exports = function (log, validate) {
         // Tasks that this one depends on (these tasks will run before this one).
         dependsOn: [
             "test1",
+            "test2",
         ], 
 
         //
