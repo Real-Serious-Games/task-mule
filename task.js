@@ -85,7 +85,7 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
     };
 
     //
-    // Get the names of tasks that a particular task is dependent on.
+    // Gets the tasks that this task depends on.
     //
     self.getDependencies = function (config) {
 
@@ -99,16 +99,16 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
             return [];
         }
         
-        var depNames;
+        var dependencies;
         
         if (Object.isFunction(self.module.dependsOn)) {
-            depNames = self.module.dependsOn(config);
+            dependencies = self.module.dependsOn(config);
         }
         else {
-            depNames = self.module.dependsOn;
+            dependencies = self.module.dependsOn;
         }
         
-        return depNames;
+        return dependencies;
     };
 
     //
