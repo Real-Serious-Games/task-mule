@@ -112,10 +112,10 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
         }
 
         // Normalize dependencies.
-        return E.from(dependencies)
+        dependencies = E.from(dependencies)
             .select(function (dependency) {                
                 
-                if (util.isObject) {
+                if (util.isObject(dependency)) {
                     if (!dependency.configure) {
                         // Auto-supply a configure function.
                         dependency.configure = function () {
@@ -125,6 +125,8 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
                     return dependency;
                 }
                 else {
+                    assert.isString(dependency);
+
                     return { 
                         task: dependency,
                         configure: function () {
@@ -134,6 +136,8 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
                 }
             })
             .toArray();
+
+        return dependencies;
     };
 
     //
@@ -148,7 +152,7 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
         try {
             resolvedDependencies = establishDependencies(config);
             resolvedDependencies.forEach(function (dependency) {
-                    dependency.task = taskRunner.getTask(dependency.task);
+                    dependency.resolvedTask = taskRunner.getTask(dependency.task);
                 });
         }
         catch (e) {
@@ -166,6 +170,10 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
         assert.isObject(tasksValidated);
 
         var taskName = self.fullName();
+        if (tasksValidated[taskName]) { //todo: include the hash code here for the task and it's configuration.
+            // Skip tasks that have already been satisfied.
+            return Promise.resolve();
+        }
 
         //
         // Run sequential dependencies.
@@ -178,20 +186,17 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
                         function (prevPromise, dependency) {
                             return prevPromise
                                 .then(function () {
-                                    return dependency.configure(config); //todo: this must be able to return a promise, this changes things!!!
+                                    return dependency.configure(config);
                                 })
-                                .then(function () { 
-                                    return dependency.task.validate(config, tasksValidated);  //todo: define task-specific configuration before validation.
+                                .then(function (depConfig) { 
+                                    assert.isObject(depConfig);
+
+                                    return dependency.resolvedTask.validate(config, tasksValidated);
                                 });
                         }
                     );
             })
             .then(function () {
-                if (tasksValidated[taskName]) { //todo: include the hash code here for the task and it's configuration.
-                    // Skip tasks that have already been satisfied.
-                    return Promise.resolve();
-                }
-
                 tasksValidated[taskName] = true; // Make that the task has been invoked.
 
                 //log.info("Validating " + taskName);
@@ -249,6 +254,10 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
         assert.isObject(tasksInvoked);
 
         var taskName = self.fullName();
+        if (tasksInvoked[taskName]) { //todo: add config key here.
+            // Skip tasks that have already been satisfied.
+            return Promise.resolve();
+        }
 
         //
         // Run sequential dependencies.
@@ -263,18 +272,15 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
                                 .then(function () { 
                                     return dependency.configure(config); 
                                 })
-                                .then(function () { 
-                                    return dependency.task.invoke(config, tasksInvoked); 
+                                .then(function (depConfig) { 
+                                    assert.isObject(depConfig);
+
+                                    return dependency.resolvedTask.invoke(config, tasksInvoked); 
                                 });
                         }
                     );
             })
             .then(function () {
-                if (tasksInvoked[taskName]) {
-                    // Skip tasks that have already been satisfied.
-                    return Promise.resolve();
-                }
-
                 tasksInvoked[taskName] = true; // Make that the task has been invoked.
 
                 if (config.get('verbose')) {
@@ -353,7 +359,7 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
         output += "\n";
 
         resolvedDependencies.forEach(function (dependency) {
-                output += dependency.task.genTree(indentLevel+1);
+                output += dependency.resolvedTask.genTree(indentLevel+1);
             });
 
         return output;
