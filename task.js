@@ -116,6 +116,12 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
             .select(function (dependency) {                
                 
                 if (util.isObject) {
+                    if (!dependency.configure) {
+                        // Auto-supply a configure function.
+                        dependency.configure = function () {
+                            return [];
+                        };
+                    }
                     return dependency;
                 }
                 else {
@@ -164,13 +170,16 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
         //
         // Run sequential dependencies.
         //
-        return self.configure(config)
+        return self.configure(config) //todo: rename this to 'setup', but probably will want a cleanup as well!!
             .then(function () {
                 return E.from(resolvedDependencies)
                     .aggregate(
                         Promise.resolve(), // Starting promise.
                         function (prevPromise, dependency) {
                             return prevPromise
+                                .then(function () {
+                                    return dependency.configure(config); //todo: this must be able to return a promise, this changes things!!!
+                                })
                                 .then(function () { 
                                     return dependency.task.validate(config, tasksValidated);  //todo: define task-specific configuration before validation.
                                 });
@@ -244,13 +253,16 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
         //
         // Run sequential dependencies.
         //
-        return self.configure(config)
+        return self.configure(config) //todo: rename this to 'setup'
             .then(function () {
                 return E.from(resolvedDependencies)
                     .aggregate(
                         Promise.resolve(), // Starting promise.
                         function (prevPromise, dependency) {
                             return prevPromise
+                                .then(function () { 
+                                    return dependency.configure(config); 
+                                })
                                 .then(function () { 
                                     return dependency.task.invoke(config, tasksInvoked); 
                                 });
