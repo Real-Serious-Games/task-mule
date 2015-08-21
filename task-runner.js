@@ -95,9 +95,9 @@ var TaskRunner = function (log) {
 	    //
 	    var taskInvoked = {};
 
-        return requestedTask.validate(config, tasksValidated)
+        return requestedTask.validate({}, config, tasksValidated)
             .then(function () {
-                return requestedTask.invoke(config, taskInvoked);
+                return requestedTask.invoke({}, config, taskInvoked);
             })
             .then(function () {
             
@@ -138,7 +138,6 @@ var TaskRunner = function (log) {
 	    tasks.forEach(function (task) {
         	task.resolveDependencies(config);
     	});
-
     };
 
 
