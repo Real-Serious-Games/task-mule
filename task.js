@@ -108,8 +108,20 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
         else {
             dependencies = self.module.dependsOn;
         }
-        
-        return dependencies;
+
+        // Normalize dependencies.
+        return E.from(dependencies)
+            .select(function (dependency) {                
+                assert.isString(dependency);
+
+                return { 
+                    task: dependency,
+                    configure: function () {
+                        return {}; // No effect.
+                    },
+                };
+            })
+            .toArray();
     };
 
     //
@@ -122,11 +134,10 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
         assert.isFunction(taskRunner.getTask);
 
         try {
-            resolvedDependencies = E.from(establishDependencies(config))
-                .select(function (taskName) {
-                    return taskRunner.getTask(taskName);
-                })
-                .toArray();
+            resolvedDependencies = establishDependencies(config);
+            resolvedDependencies.forEach(function (dependency) {
+                    dependency.task = taskRunner.getTask(dependency.task);
+                });
         }
         catch (e) {
             log.error('Exception while resolving dependencies for task: ' + self.fullName());
@@ -152,10 +163,10 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
                 return E.from(resolvedDependencies)
                     .aggregate(
                         Promise.resolve(), // Starting promise.
-                        function (prevPromise, depTask) {
+                        function (prevPromise, dependency) {
                             return prevPromise
                                 .then(function () { 
-                                    return depTask.validate(config, tasksValidated);  //todo: define task-specific configuration before validation.
+                                    return dependency.task.validate(config, tasksValidated);  //todo: define task-specific configuration before validation.
                                 });
                         }
                     );
@@ -232,10 +243,10 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
                 return E.from(resolvedDependencies)
                     .aggregate(
                         Promise.resolve(), // Starting promise.
-                        function (prevPromise, depTask) {
+                        function (prevPromise, dependency) {
                             return prevPromise
                                 .then(function () { 
-                                    return depTask.invoke(config, tasksInvoked); 
+                                    return dependency.task.invoke(config, tasksInvoked); 
                                 });
                         }
                     );
@@ -323,9 +334,9 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
         output += self.fullName();
         output += "\n";
 
-        resolvedDependencies.forEach(function (depTask) {
-            output += depTask.genTree(indentLevel+1);
-        });
+        resolvedDependencies.forEach(function (dependency) {
+                output += dependency.task.genTree(indentLevel+1);
+            });
 
         return output;
     };
