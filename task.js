@@ -178,6 +178,20 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
             return Promise.resolve();
         }
 
+        var configProperties = E.from(Object.keys(configOverride))
+            .select(function (key) {
+                return {
+                    key: key,
+                    value: configOverride[key],
+                };
+            })
+            .toArray();
+        configProperties.forEach(
+            function (property) {
+                config.set(property.key, property.value); //todo: really want to push and pop these properties!
+            }
+        );
+
         //
         // Run sequential dependencies.
         //
@@ -259,10 +273,24 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
 
         var taskName = self.fullName();
         var taskKey = taskName + '_' + hash(configOverride);
-        if (tasksInvoked[taskKey]) { //todo: add config key here.
+        if (tasksInvoked[taskKey]) {
             // Skip tasks that have already been satisfied.
             return Promise.resolve();
         }
+
+        var configProperties = E.from(Object.keys(configOverride))
+            .select(function (key) {
+                return {
+                    key: key,
+                    value: configOverride[key],
+                };
+            })
+            .toArray();
+        configProperties.forEach(
+            function (property) {
+                config.set(property.key, property.value);
+            }
+        );
 
         //
         // Run sequential dependencies.

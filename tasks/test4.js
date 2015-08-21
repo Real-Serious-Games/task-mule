@@ -20,7 +20,7 @@ module.exports = function (log, validate) {
                 task: "test3",
                 configure: function (config) {
                     return {
-                        one: 2,
+                        foo: 5,
                     };
                 },
             },            

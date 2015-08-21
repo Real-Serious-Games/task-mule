@@ -27,6 +27,8 @@ module.exports = function (log, validate) {
         //
         invoke: function (config) {
             console.log('Invoke test3');
+
+            console.log('foo: ' + config.get('foo'));
         },
     };
 };
