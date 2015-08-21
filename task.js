@@ -44,6 +44,7 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
     self.taskName = stripExt(fileName);
     self.children = [];
     self.childrenMap = {};
+    var resolvedDependencies = [];
 
     if (S(fullFilePath).endsWith(".js")) {
         var moduleLoadFunction = require(fullFilePath);
@@ -121,7 +122,7 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
         assert.isFunction(taskRunner.getTask);
 
         try {
-            self.dependencies = E.from(self.getDependencies(config))
+            resolvedDependencies = E.from(self.getDependencies(config))
                 .select(function (taskName) {
                     return taskRunner.getTask(taskName);
                 })
@@ -148,7 +149,7 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
         //
         return self.configure(config)
             .then(function () {
-                return E.from(self.dependencies)
+                return E.from(resolvedDependencies)
                     .aggregate(
                         Promise.resolve(), // Starting promise.
                         function (prevPromise, depTask) {
@@ -228,7 +229,7 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
         //
         return self.configure(config)
             .then(function () {
-                return E.from(self.dependencies)
+                return E.from(resolvedDependencies)
                     .aggregate(
                         Promise.resolve(), // Starting promise.
                         function (prevPromise, depTask) {
@@ -322,7 +323,7 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
         output += self.fullName();
         output += "\n";
 
-        self.dependencies.forEach(function (depTask) {
+        resolvedDependencies.forEach(function (depTask) {
             output += depTask.genTree(indentLevel+1);
         });
 
