@@ -5,6 +5,7 @@ var metrics = require('statman');
 var Promise = require('promise');
 var sugar = require('sugar');
 var Q = require('q');
+var util = require('util');
 
 //
 // Strips an extension from a filename.
@@ -81,6 +82,8 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
     // Add a child task.
     //
     self.addChild = function (childTask) {
+        assert.isObject(childTask);
+
         self.children.push(childTask);
         self.childrenMap[childTask.name()] = childTask;
     };
@@ -89,7 +92,6 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
     // Gets the tasks that this task depends on.
     //
     var establishDependencies = function (config) {
-
         assert.isObject(config);
 
         if (!self.module) {
@@ -112,14 +114,18 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
         // Normalize dependencies.
         return E.from(dependencies)
             .select(function (dependency) {                
-                assert.isString(dependency);
-
-                return { 
-                    task: dependency,
-                    configure: function () {
-                        return {}; // No effect.
-                    },
-                };
+                
+                if (util.isObject) {
+                    return dependency;
+                }
+                else {
+                    return { 
+                        task: dependency,
+                        configure: function () {
+                            return {}; // No effect.
+                        },
+                    };
+                }
             })
             .toArray();
     };

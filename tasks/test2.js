@@ -8,7 +8,13 @@ module.exports = function (log, validate) {
         
         // Tasks that this one depends on (these tasks will run before this one).
         dependsOn: [
-            'test1',
+            {
+                task: 'test1',
+                configure: function (config) {
+                    console.log("Configuring for dependency test1");
+                    return {};
+                },
+            },
         ], 
 
         //
