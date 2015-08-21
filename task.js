@@ -88,7 +88,7 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
     //
     // Gets the tasks that this task depends on.
     //
-    self.getDependencies = function (config) {
+    var establishDependencies = function (config) {
 
         assert.isObject(config);
 
@@ -122,7 +122,7 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
         assert.isFunction(taskRunner.getTask);
 
         try {
-            resolvedDependencies = E.from(self.getDependencies(config))
+            resolvedDependencies = E.from(establishDependencies(config))
                 .select(function (taskName) {
                     return taskRunner.getTask(taskName);
                 })
