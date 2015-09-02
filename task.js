@@ -6,7 +6,7 @@ var Promise = require('promise');
 var sugar = require('sugar');
 var Q = require('q');
 var util = require('util');
-var hash = require('es-hash');
+var hash = require('./es-hash');
 
 //
 // Strips an extension from a filename.
@@ -156,9 +156,9 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
                     dependency.resolvedTask = taskRunner.getTask(dependency.task);
                 });
         }
-        catch (e) {
-            log.error('Exception while resolving dependencies for task: ' + self.fullName());
-            throw e;
+        catch (err) {
+            log.error('Exception while resolving dependencies for task: ' + self.fullName() + "\r\n" + err.stack);
+            throw err;
         }
     };
 
