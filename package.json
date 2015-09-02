@@ -1,6 +1,6 @@
 {
   "name": "task-mule",
-  "version": "1.0.58",
+  "version": "1.0.61",
   "description": "Yet another task runner",
   "main": "index.js",
   "scripts": {
@@ -31,7 +31,6 @@
     "ascii-tree": "^0.1.1",
     "chai": "^3.2.0",
     "chalk": "^1.0.0",
-    "es-hash": "^1.0.4",
     "fs-extra": "^0.19.0",
     "globby": "^2.0.0",
     "linq": "^3.0.4-beta",

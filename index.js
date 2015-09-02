@@ -94,11 +94,11 @@ module.exports = function (config) {
 		});
 	}
 
+	buildConfig.init();
+
 	var taskRunner = require('./task-loader.js')({}, log, validate, nconf);
 
 	if (requestedTaskName) {
-		buildConfig.init();
-
 	    taskRunner.runTask(requestedTaskName, nconf)
             .catch(function (err) {
                 
