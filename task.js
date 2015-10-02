@@ -178,19 +178,7 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
             return Promise.resolve();
         }
 
-        var configProperties = E.from(Object.keys(configOverride))
-            .select(function (key) {
-                return {
-                    key: key,
-                    value: configOverride[key],
-                };
-            })
-            .toArray();
-        configProperties.forEach(
-            function (property) {
-                config.set(property.key, property.value); //todo: really want to push and pop these properties!
-            }
-        );
+        config.push(configOverride);
 
         //
         // Run sequential dependencies.
@@ -242,7 +230,14 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
                     log.error("Exception while validating task: " + taskName);
                     throw e;
                 }
-            });  
+            })
+            .then(function () {
+                config.pop(); // Restore previous config.
+            })
+            .catch(function (e) {
+                config.pop();  // Restore previous config.
+                throw e; // Propagate error.
+            });        
     };
 
     //
@@ -278,19 +273,7 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
             return Promise.resolve();
         }
 
-        var configProperties = E.from(Object.keys(configOverride))
-            .select(function (key) {
-                return {
-                    key: key,
-                    value: configOverride[key],
-                };
-            })
-            .toArray();
-        configProperties.forEach(
-            function (property) {
-                config.set(property.key, property.value);
-            }
-        );
+        config.push(configOverride);
 
         //
         // Run sequential dependencies.
@@ -374,7 +357,14 @@ function Task(fileName, relativeFilePath, fullFilePath, parentTask, log, validat
                     log.error("Exception while invoking task: " + taskName);
                     throw e;
                 }
-            });            
+            })
+            .then(function () {
+                config.pop(); // Restore previous config.
+            })
+            .catch(function (e) {
+                config.pop();  // Restore previous config.
+                throw e; // Propagate error.
+            });        
     };
 
     var makeIndent = function (indentLevel) {
