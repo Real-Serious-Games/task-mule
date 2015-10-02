@@ -3,7 +3,7 @@
 module.exports = function (config) {
 
 	var argv = require('yargs').argv;
-	var nconf = require('nconf');
+	var conf = require('confucious');
 	var path = require('path');
 	var fs = require('fs-extra');
 	var globby = require('globby');
@@ -78,28 +78,25 @@ module.exports = function (config) {
 		process.exit(1);
 	}
 
-	var buildConfig = require(buildFilePath)(nconf, log, validate);
-
-	nconf.use('memory');
-
-	nconf.argv();
+	var buildConfig = require(buildFilePath)(conf, log, validate);
 
 	var defaultConfigFilePath = path.join(workingDirectory, 'config.json');
 	if (fs.existsSync(defaultConfigFilePath)) {
 
 		log.verbose("Loading config from file: " + defaultConfigFilePath);
 
-		nconf.file({
-			file: defaultConfigFilePath,
-		});
+		conf.pushJsonFile(defaultConfigFilePath);
 	}
 
 	buildConfig.init();
 
-	var taskRunner = require('./task-loader.js')({}, log, validate, nconf);
+	conf.pushEnv();
+	conf.pushArgv();
+
+	var taskRunner = require('./task-loader.js')({}, log, validate, conf);
 
 	if (requestedTaskName) {
-	    taskRunner.runTask(requestedTaskName, nconf)
+	    taskRunner.runTask(requestedTaskName, conf)
             .catch(function (err) {
                 
                 log.error('Build failed.');
