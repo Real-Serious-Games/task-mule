@@ -20,35 +20,19 @@ var TaskRunner = function (log) {
     var tasks = [];
 
     //
-    // Root tasks in the task hierarchy.
-    //
-    var rootTasks = [];
-
-    //
     // Map of tasks for look up by name.
     //
     var taskMap = {};
 
     //
-    // Add a task and wire it up to the parent task.
+    // Add a task.
     //
-	self.addTask = function (task, parentTask) {
+	self.addTask = function (task) {
 
 		assert.isObject(task);
 
-		if (parentTask) {
-			assert.isObject(parentTask);
-		}
-
         tasks.push(task);
-        taskMap[task.fullName()] = task;                
-
-        if (parentTask) {
-            parentTask.addChild(task);
-        }
-        else {
-            rootTasks.push(task);
-        }
+        taskMap[task.name()] = task;                
 	};
 
 	//
@@ -120,7 +104,7 @@ var TaskRunner = function (log) {
 
         var treeOutput = "#tasks\n";
 
-        rootTasks.forEach(function (task) {
+        tasks.forEach(function (task) {
             treeOutput += task.genTree(2);
         });
 
