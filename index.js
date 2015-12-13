@@ -23,7 +23,7 @@ module.exports = function (config) {
 	var buildFilePath = path.join(workingDirectory, "build.js");
 	var tasksDirectory = path.join(workingDirectory, 'tasks');
 	
-	var requestedTaskName = argv._[0];
+	var requestedTaskName = config.requestedTaskName || argv._[0];
 	if (requestedTaskName === 'init') {
 		if (fs.existsSync(buildFilePath)) {
 			log.error("Can't overwrite existing 'build.js'.");
@@ -93,10 +93,14 @@ module.exports = function (config) {
 	conf.pushEnv();
 	conf.pushArgv();
 
+	if (config.defaultConfig) {
+		conf.push(config.defaultConfig)
+	}
+
 	var taskRunner = require('./task-loader.js')({}, log, validate, conf);
 
 	if (requestedTaskName) {
-	    taskRunner.runTask(requestedTaskName, conf)
+	    return taskRunner.runTask(requestedTaskName, conf)
             .catch(function (err) {
                 
                 log.error('Build failed.');
@@ -113,7 +117,7 @@ module.exports = function (config) {
                 }
                 process.exit(1);
             })
-	        .done(function () {
+	        .then(function () {
         		buildConfig.done();
 	        });
 	}
