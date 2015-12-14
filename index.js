@@ -65,6 +65,74 @@ module.exports = function (config) {
 
 		process.exit(0);
 	}
+	else if (requestedTaskName === 'schedule') {
+
+		if (!fs.existsSync('schedule.json')) {
+			log.error('Expected scehdule.json to specify the schedule of tasks.');
+			process.exit(1);
+		}
+
+		var buildConfig = require(buildFilePath)(conf, log, validate);
+
+		var defaultConfigFilePath = path.join(workingDirectory, 'config.json');
+		if (fs.existsSync(defaultConfigFilePath)) {
+
+			log.verbose("Loading config from file: " + defaultConfigFilePath);
+
+			conf.pushJsonFile(defaultConfigFilePath);
+		}
+
+		buildConfig.init();
+
+		conf.pushEnv();
+		conf.pushArgv();
+
+		if (config.defaultConfig) {
+			conf.push(config.defaultConfig)
+		}
+
+		var taskRunner = require('./task-loader.js')({}, log, validate, conf);
+		var cron = require('cron');
+
+		var schedule = JSON.parse(fs.readFileSync('schedule.json', 'utf8'));
+
+		log.info('Starting task scheduler:');
+		schedule.jobs.forEach(function (jobSpec) {
+			log.info("\t" + jobSpec.task + " - " + jobSpec.cron);
+		});
+
+		schedule.jobs.forEach(function (jobSpec) {
+			var cronJob = new cron.CronJob({
+			    cronTime: jobSpec.cron,
+			    onTick: function() { 
+
+			    	log.info("Running task " + jobSpec.task + " at " + (new Date()));
+
+					taskRunner.runTask(jobSpec.task, conf)
+			            .catch(function (err) {		                
+			                log.error('Build failed.');
+			                
+			                if (err.message) {
+			                    log.warn(err.message);
+			                }
+
+			                if (err.stack) {
+			                    log.warn(err.stack);
+			                }
+			                else {
+			                    log.warn('no stack');
+			                }
+			            })
+				        .done(function () {
+			        		buildConfig.done();
+				        });			    	
+			    }, 
+			    start: true,
+			});			
+		});
+
+		return;
+	}
 
 	if (!fs.existsSync(buildFilePath)) {
 		log.error("'build.js' not found, please run task-mule in a directory that has this file.");

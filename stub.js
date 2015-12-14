@@ -4,4 +4,4 @@
 
 'use strict';
 
-require('./index')();
+require('./index')({});
