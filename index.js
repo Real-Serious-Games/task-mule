@@ -97,11 +97,10 @@ module.exports = function (config) {
 		var schedule = JSON.parse(fs.readFileSync('schedule.json', 'utf8'));
 
 		log.info('Starting task scheduler:');
-		schedule.jobs.forEach(function (jobSpec) {
-			log.info("\t" + jobSpec.task + " - " + jobSpec.cron);
-		});
 
 		schedule.jobs.forEach(function (jobSpec) {
+			log.info("\t" + jobSpec.task + " - " + jobSpec.cron);
+
 			var cronJob = new cron.CronJob({
 			    cronTime: jobSpec.cron,
 			    onTick: function() { 
