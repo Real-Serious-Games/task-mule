@@ -185,6 +185,10 @@ module.exports = function (config) {
                 if (!config.noExit) {
                 	process.exit(1);
                 }
+
+                buildConfig.done();
+
+                throw err;
             })
 	        .then(function () {
         		buildConfig.done();
