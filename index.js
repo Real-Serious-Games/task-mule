@@ -182,7 +182,9 @@ module.exports = function (config) {
                 else {
                     log.warn('no stack');
                 }
-                process.exit(1);
+                if (!config.noExit) {
+                	process.exit(1);
+                }
             })
 	        .then(function () {
         		buildConfig.done();
