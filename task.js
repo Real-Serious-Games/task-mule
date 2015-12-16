@@ -71,33 +71,49 @@ function Task(taskName, relativeFilePath, fullFilePath, log, validate, taskRunne
             dependencies = self.module.dependsOn;
         }
 
+        //
         // Normalize dependencies.
-        dependencies = E.from(dependencies)
-            .select(function (dependency) {                
-                
-                if (util.isObject(dependency)) {
-                    if (!dependency.configure) {
-                        // Auto-supply a configure function.
-                        dependency.configure = function () {
-                            return [];
+        //
+        var normalizeDependencies = function (dependencies) {
+            assert.isArray(dependencies);
+
+            // Normalize dependencies.
+            return E.from(dependencies)
+                .select(function (dependency) {                
+                    
+                    if (util.isObject(dependency)) {
+                        if (!dependency.configure) {
+                            // Auto-supply a configure function.
+                            dependency.configure = function () {
+                                return [];
+                            };
+                        }
+                        return dependency;
+                    }
+                    else {
+                        assert.isString(dependency);
+
+                        return { 
+                            task: dependency,
+                            configure: function () {
+                                return {}; // No effect.
+                            },
                         };
                     }
-                    return dependency;
-                }
-                else {
-                    assert.isString(dependency);
+                })
+                .toArray();            
+        };
 
-                    return { 
-                        task: dependency,
-                        configure: function () {
-                            return {}; // No effect.
-                        },
-                    };
-                }
-            })
-            .toArray();
-
-        return Promise.resolve(dependencies);
+        if (util.isFunction(dependencies.then)) {
+            // Assume dependencies is a promise.
+            return dependencies
+                .then(function (deps) {
+                    return normalizeDependencies(deps);
+                });
+        }
+        else {
+            return Promise.resolve(normalizeDependencies(dependencies));
+        }
     };
 
     //
