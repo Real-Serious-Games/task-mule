@@ -93,7 +93,7 @@ module.exports = function (config) {
 
 		var taskRunner = require('./task-loader.js')({}, log, validate, conf);
 
-	    taskRunner.resolveDependencies(config)
+	    taskRunner.resolveDependencies(conf)
 	    	.then(function () {
 				var cron = require('cron');
 
@@ -171,7 +171,7 @@ module.exports = function (config) {
 	var taskRunner = require('./task-loader.js')({}, log, validate, conf);
 
 	if (requestedTaskName) {
-	    return taskRunner.resolveDependencies(config)
+	    return taskRunner.resolveDependencies(conf)
 	    	.then(function () {
 	    		return taskRunner.runTask(requestedTaskName, conf);
 	    	})
@@ -202,7 +202,7 @@ module.exports = function (config) {
 	        });
 	}
 	else if (argv.tasks) {
-	    return taskRunner.resolveDependencies(config)
+	    return taskRunner.resolveDependencies(conf)
 	    	.then(function () {
 			    taskRunner.listTasks();
 			    process.exit(1);
