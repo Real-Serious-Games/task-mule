@@ -3,6 +3,7 @@
 var assert = require('chai').assert;
 var AsciiTable = require('ascii-table');
 var metrics = require('statman');
+var E = require('linq');
 
 // 
 // Responsible for finding and running tasks.
@@ -118,10 +119,13 @@ var TaskRunner = function (log) {
     self.resolveDependencies = function (config) {
 
     	assert.isObject(config);
-	    
-	    tasks.forEach(function (task) {
-        	task.resolveDependencies(config);
-    	});
+
+        return E.from(tasks)
+            .aggregate(Promise.resolve(), function (prevPromise, task) {
+                return prevPromise.then(function () {
+                    return task.resolveDependencies(config);
+                });
+            });
     };
 
 

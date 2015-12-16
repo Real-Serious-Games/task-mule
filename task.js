@@ -49,6 +49,7 @@ function Task(taskName, relativeFilePath, fullFilePath, log, validate, taskRunne
 
     //
     // Gets the tasks that this task depends on.
+    // Returns a promise, just in case the task needs some time to figure out it's dependencies.
     //
     var establishDependencies = function (config) {
         assert.isObject(config);
@@ -96,7 +97,7 @@ function Task(taskName, relativeFilePath, fullFilePath, log, validate, taskRunne
             })
             .toArray();
 
-        return dependencies;
+        return Promise.resolve(dependencies);
     };
 
     //
@@ -109,10 +110,13 @@ function Task(taskName, relativeFilePath, fullFilePath, log, validate, taskRunne
         assert.isFunction(taskRunner.getTask);
 
         try {
-            resolvedDependencies = establishDependencies(config);
+            return establishDependencies(config)
+                .then(function (deps) {
+                    resolvedDependencies = deps;
 
-            resolvedDependencies.forEach(function (dependency) {
-                    dependency.resolvedTask = taskRunner.getTask(dependency.task);
+                    resolvedDependencies.forEach(function (dependency) {
+                            dependency.resolvedTask = taskRunner.getTask(dependency.task);
+                        });
                 });
         }
         catch (err) {

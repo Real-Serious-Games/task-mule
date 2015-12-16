@@ -92,43 +92,47 @@ module.exports = function (config) {
 		}
 
 		var taskRunner = require('./task-loader.js')({}, log, validate, conf);
-		var cron = require('cron');
 
-		var schedule = JSON.parse(fs.readFileSync('schedule.json', 'utf8'));
+	    taskRunner.resolveDependencies(config)
+	    	.then(function () {
+				var cron = require('cron');
 
-		log.info('Starting task scheduler:');
+				var schedule = JSON.parse(fs.readFileSync('schedule.json', 'utf8'));
 
-		schedule.jobs.forEach(function (jobSpec) {
-			log.info("\t" + jobSpec.task + " - " + jobSpec.cron);
+				log.info('Starting task scheduler:');
 
-			var cronJob = new cron.CronJob({
-			    cronTime: jobSpec.cron,
-			    onTick: function() { 
+				schedule.jobs.forEach(function (jobSpec) {
+					log.info("\t" + jobSpec.task + " - " + jobSpec.cron);
 
-			    	log.info("Running task " + jobSpec.task + " at " + (new Date()));
+					var cronJob = new cron.CronJob({
+					    cronTime: jobSpec.cron,
+					    onTick: function() { 
 
-					taskRunner.runTask(jobSpec.task, conf)
-			            .catch(function (err) {		                
-			                log.error('Build failed.');
-			                
-			                if (err.message) {
-			                    log.warn(err.message);
-			                }
+					    	log.info("Running task " + jobSpec.task + " at " + (new Date()));
 
-			                if (err.stack) {
-			                    log.warn(err.stack);
-			                }
-			                else {
-			                    log.warn('no stack');
-			                }
-			            })
-				        .done(function () {
-			        		buildConfig.done();
-				        });			    	
-			    }, 
-			    start: true,
-			});			
-		});
+							taskRunner.runTask(jobSpec.task, conf)
+					            .catch(function (err) {		                
+					                log.error('Build failed.');
+					                
+					                if (err.message) {
+					                    log.warn(err.message);
+					                }
+
+					                if (err.stack) {
+					                    log.warn(err.stack);
+					                }
+					                else {
+					                    log.warn('no stack');
+					                }
+					            })
+						        .done(function () {
+					        		buildConfig.done();
+						        });			    	
+					    }, 
+					    start: true,
+					});			
+				});
+	    	});
 
 		return;
 	}
@@ -167,7 +171,10 @@ module.exports = function (config) {
 	var taskRunner = require('./task-loader.js')({}, log, validate, conf);
 
 	if (requestedTaskName) {
-	    return taskRunner.runTask(requestedTaskName, conf)
+	    return taskRunner.resolveDependencies(config)
+	    	.then(function () {
+	    		return taskRunner.runTask(requestedTaskName, conf);
+	    	})
             .catch(function (err) {
                 
                 log.error('Build failed.');
@@ -195,8 +202,11 @@ module.exports = function (config) {
 	        });
 	}
 	else if (argv.tasks) {
-	    taskRunner.listTasks();
-	    process.exit(1);
+	    return taskRunner.resolveDependencies(config)
+	    	.then(function () {
+			    taskRunner.listTasks();
+			    process.exit(1);
+			});
 	} 
 	else {
 	    log.info("Usage: task-mule <task-name> [options]\n");

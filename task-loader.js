@@ -74,7 +74,5 @@ module.exports = function (autoLoadConfig, log, validate, config) {
     
     walkDirs(tasksDir);
 
-    taskRunner.resolveDependencies(config);
-
     return taskRunner;
 };
