@@ -12,7 +12,7 @@ module.exports = function (config) {
 	var S = require('string');
 	var AsciiTable = require('ascii-table');
 
-	var log = require('./log')(argv.verbose, argv.nocolors);
+	var log = config.log || require('./log')(argv.verbose, argv.nocolors);
 
 	global.runCmd = require('./run-cmd')(log);
 	global.path = require('path');
