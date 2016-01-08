@@ -84,14 +84,14 @@ module.exports = function (config) {
 			conf.pushJsonFile(defaultConfigFilePath);
 		}
 
-		buildConfig.init();
-
 		conf.pushEnv();
 		conf.pushArgv();
 
 		if (config.defaultConfig) {
 			conf.push(config.defaultConfig)
 		}
+
+		buildConfig.init();
 
 		var taskRunner = require('./task-loader.js')({}, log, validate, conf);
 
@@ -161,14 +161,14 @@ module.exports = function (config) {
 		conf.pushJsonFile(defaultConfigFilePath);
 	}
 
-	buildConfig.init();
-
 	conf.pushEnv();
 	conf.pushArgv();
 
 	if (config.defaultConfig) {
 		conf.push(config.defaultConfig)
 	}
+
+	buildConfig.init();
 
 	var taskRunner = require('./task-loader.js')({}, log, validate, conf);
 
