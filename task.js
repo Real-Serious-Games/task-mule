@@ -16,7 +16,11 @@ function Task(taskName, relativeFilePath, fullFilePath, log, validate, taskRunne
     assert.isString(taskName);
     assert.isString(relativeFilePath);
     assert.isString(fullFilePath);
-    assert.isObject(log);
+    assert.isFunction(log.info);
+    assert.isFunction(log.error);
+    assert.isFunction(log.warn);
+    assert.isFunction(log.verbose);
+    assert.isFunction(log.task);
     assert.isObject(validate);
     assert.isObject(taskRunner);    
     assert.isFunction(taskRunner.getTask);

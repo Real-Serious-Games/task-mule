@@ -13,7 +13,7 @@ var TaskRunner = function (log) {
 
 	var self = this;
 
-	assert.isObject(log);
+    assert.isFunction(log.info);
 
 	//
 	// All tasks.
