@@ -14,7 +14,6 @@ var assert = require('chai').assert;
 module.exports = function (autoLoadConfig, log, validate, config) {
 
     assert.isObject(autoLoadConfig);
-    assert.isObject(log);
     assert.isObject(validate);
     assert.isObject(config);
 
