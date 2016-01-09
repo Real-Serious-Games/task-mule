@@ -114,7 +114,7 @@ module.exports = function (config) {
 
 							taskRunner.runTask(jobSpec.task, conf)
 								.then(function () {
-									if (config.jobSucceeded)
+									if (config.jobSucceeded) {
 										config.jobSucceeded(jobSpec.task);
 									}
 								})
