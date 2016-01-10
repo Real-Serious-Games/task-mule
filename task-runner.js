@@ -54,7 +54,7 @@ var TaskRunner = function (log) {
 	//
 	// Run a named task with a particular config.
 	//
-	self.runTask = function (requestedTaskName, config) {
+	self.runTask = function (requestedTaskName, config, configOverride) {
 
 		assert.isString(requestedTaskName);
 		assert.isObject(config);
@@ -80,9 +80,11 @@ var TaskRunner = function (log) {
 	    //
 	    var taskInvoked = {};
 
-        return requestedTask.validate({}, config, tasksValidated)
+        configOverride = configOverride || {}
+
+        return requestedTask.validate(configOverride, config, tasksValidated)
             .then(function () {
-                return requestedTask.invoke({}, config, taskInvoked);
+                return requestedTask.invoke(configOverride, config, taskInvoked);
             })
             .then(function () {
             
