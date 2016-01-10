@@ -59,11 +59,11 @@ function Task(taskName, relativeFilePath, fullFilePath, log, validate, taskRunne
         assert.isObject(config);
 
         if (!self.module) {
-            return [];
+            return Promise.resolve([]);
         }
 
         if (!self.module.dependsOn) {
-            return [];
+            return Promise.resolve([]);
         }
         
         var dependencies;
