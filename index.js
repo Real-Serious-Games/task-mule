@@ -111,29 +111,29 @@ module.exports = function (config) {
 			    	log.info("Running task " + jobSpec.task + " at " + (new Date()));
 
 					taskRunner.runTask(jobSpec.task, conf)
-								.then(function () {
-									if (config.jobSucceeded) {
-										config.jobSucceeded(jobSpec.task);
-									}
-								})
-					            .catch(function (err) {		                
-					            	if (config.jobFailed) {
-					            		config.jobFailed(jobSpec.task, err);
-					            	} 
-					            	else {
-					                log.error('Build failed.');
-					                
-					                if (err.message) {
-					                    log.warn(err.message);
-					                }
+						.then(function () {
+							if (config.jobSucceeded) {
+								config.jobSucceeded(jobSpec.task);
+							}
+						})
+			            .catch(function (err) {		                
+			            	if (config.jobFailed) {
+			            		config.jobFailed(jobSpec.task, err);
+			            	} 
+			            	else {
+			                	log.error('Build failed.');
+			                
+				                if (err.message) {
+				                    log.warn(err.message);
+				                }
 
-					                if (err.stack) {
-					                    log.warn(err.stack);
-					                }
-					                else {
-					                    log.warn('no stack');
-						                }					            		
-					                }
+				                if (err.stack) {
+				                    log.warn(err.stack);
+				                }
+				                else {
+				                    log.warn('no stack');
+				                }					            		
+			                }
 			            })
 				        .done(function () {
 			        		buildConfig.done();

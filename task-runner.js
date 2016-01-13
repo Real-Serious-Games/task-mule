@@ -70,7 +70,7 @@ var TaskRunner = function (log) {
             stopWatch.start();
         }
 	
-	configOverride = configOverride || {};
+		configOverride = configOverride || {};
 
         return self.resolveDependencies(taskName, config);
             .then(function () {        
