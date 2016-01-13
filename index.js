@@ -110,6 +110,10 @@ module.exports = function (config) {
 
 			    	log.info("Running task " + jobSpec.task + " at " + (new Date()));
 
+					    	if (config.jobStarted) {
+					    		config.jobStarted(jobSpec.task);
+					    	}
+
 					taskRunner.runTask(jobSpec.task, conf)
 						.then(function () {
 							if (config.jobSucceeded) {
