@@ -12,6 +12,8 @@ module.exports = function (config) {
 	var S = require('string');
 	var AsciiTable = require('ascii-table');
 
+	config = config || {};
+
 	var log = config.log || require('./log')(argv.verbose, argv.nocolors);
 
 	global.runCmd = require('./run-cmd')(log);
@@ -82,14 +84,14 @@ module.exports = function (config) {
 			conf.pushJsonFile(defaultConfigFilePath);
 		}
 
-		buildConfig.init();
-
 		conf.pushEnv();
 		conf.pushArgv();
 
 		if (config.defaultConfig) {
 			conf.push(config.defaultConfig)
 		}
+
+		buildConfig.init();
 
 		var taskRunner = require('./task-loader.js')({}, log, validate, conf);
 
@@ -109,19 +111,29 @@ module.exports = function (config) {
 			    	log.info("Running task " + jobSpec.task + " at " + (new Date()));
 
 					taskRunner.runTask(jobSpec.task, conf)
-			            .catch(function (err) {		                
-			                log.error('Build failed.');
-			                
-			                if (err.message) {
-			                    log.warn(err.message);
-			                }
+								.then(function () {
+									if (config.jobSucceeded) {
+										config.jobSucceeded(jobSpec.task);
+									}
+								})
+					            .catch(function (err) {		                
+					            	if (config.jobFailed) {
+					            		config.jobFailed(jobSpec.task, err);
+					            	} 
+					            	else {
+					                log.error('Build failed.');
+					                
+					                if (err.message) {
+					                    log.warn(err.message);
+					                }
 
-			                if (err.stack) {
-			                    log.warn(err.stack);
-			                }
-			                else {
-			                    log.warn('no stack');
-			                }
+					                if (err.stack) {
+					                    log.warn(err.stack);
+					                }
+					                else {
+					                    log.warn('no stack');
+						                }					            		
+					                }
 			            })
 				        .done(function () {
 			        		buildConfig.done();
@@ -156,14 +168,14 @@ module.exports = function (config) {
 		conf.pushJsonFile(defaultConfigFilePath);
 	}
 
-	buildConfig.init();
-
 	conf.pushEnv();
 	conf.pushArgv();
 
 	if (config.defaultConfig) {
 		conf.push(config.defaultConfig)
 	}
+
+	buildConfig.init();
 
 	var taskRunner = require('./task-loader.js')({}, log, validate, conf);
 

@@ -13,7 +13,7 @@ var TaskRunner = function (log) {
 
 	var self = this;
 
-	assert.isObject(log);
+    assert.isFunction(log.info);
 
 	//
 	// All tasks.
@@ -54,7 +54,7 @@ var TaskRunner = function (log) {
 	//
 	// Run a named task with a particular config.
 	//
-	self.runTask = function (taskName, config) {
+	self.runTask = function (requestedTaskName, config) {
 
 		assert.isString(taskName);
 		assert.isObject(config);
@@ -69,15 +69,17 @@ var TaskRunner = function (log) {
         if (config.get('timed')) {
             stopWatch.start();
         }
+	
+	configOverride = configOverride || {};
 
         return self.resolveDependencies(taskName, config);
             .then(function () {        
                 var tasksValidated = {}; // Tasks that have been validated.
-                return requestedTask.validate({}, config, tasksValidated);
+                return requestedTask.validate(configOverride, config, tasksValidated);
             })
             .then(function () {
                 var taskInvoked = {}; // Tasks that have been invoked.
-                return requestedTask.invoke({}, config, taskInvoked);
+                return requestedTask.invoke(configOverride, config, taskInvoked);
             })
             .then(function () {            
                 var ouputMessage = 'Build completed';
