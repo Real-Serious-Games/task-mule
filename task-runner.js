@@ -54,38 +54,32 @@ var TaskRunner = function (log) {
 	//
 	// Run a named task with a particular config.
 	//
-	self.runTask = function (requestedTaskName, config) {
+	self.runTask = function (taskName, config) {
 
-		assert.isString(requestedTaskName);
+		assert.isString(taskName);
 		assert.isObject(config);
 
-        var requestedTask = taskMap[requestedTaskName];
+        var requestedTask = taskMap[taskName];
         if (!requestedTask) {
-            throw new Error("Failed to find task: " + requestedTaskName);
+            throw new Error("Failed to find task: " + taskName);
         }
-        
+
         var stopWatch = new metrics.Stopwatch();
         
         if (config.get('timed')) {
             stopWatch.start();
         }
 
-	    //
-	    // Tasks that have been validated.
-	    //
-	    var tasksValidated = {};
-
-	    //
-	    // Tasks that have been invoked.
-	    //
-	    var taskInvoked = {};
-
-        return requestedTask.validate({}, config, tasksValidated)
-            .then(function () {
-                return requestedTask.invoke({}, config, taskInvoked);
+        return self.resolveDependencies(taskName, config);
+            .then(function () {        
+                var tasksValidated = {}; // Tasks that have been validated.
+                return requestedTask.validate({}, config, tasksValidated);
             })
             .then(function () {
-            
+                var taskInvoked = {}; // Tasks that have been invoked.
+                return requestedTask.invoke({}, config, taskInvoked);
+            })
+            .then(function () {            
                 var ouputMessage = 'Build completed';
 
                 if (config.get('timed')) {
@@ -114,11 +108,11 @@ var TaskRunner = function (log) {
     };
 
     //
-    // Resolve dependencies between tasks.
+    // Resolve dependencies for all tasks.
     //
-    self.resolveDependencies = function (config) {
+    self.resolveAllDependencies = function (config) {
 
-    	assert.isObject(config);
+        assert.isObject(config);
 
         return E.from(tasks)
             .aggregate(Promise.resolve(), function (prevPromise, task) {
@@ -127,8 +121,22 @@ var TaskRunner = function (log) {
                 });
             });
     };
+    
+    //
+    // Resolve dependencies for a particular task.
+    //
+    self.resolveDependencies = function (taskName, config) {
 
+        assert.isString(taskName);
+    	assert.isObject(config);
 
+        var task = taskMap[requestedTaskName];
+        if (!task) {
+            throw new Error("Failed to find task: " + taskName);
+        }        
+
+        return task.resolveDependencies(config);
+    };
 };
 
 module.exports = TaskRunner;
