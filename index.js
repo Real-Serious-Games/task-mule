@@ -95,58 +95,10 @@ module.exports = function (config) {
 
 		var taskRunner = require('./task-loader.js')({}, log, validate, conf);
 
-		var cron = require('cron');
-
 		var schedule = JSON.parse(fs.readFileSync('schedule.json', 'utf8'));
 
-		log.info('Starting task scheduler:');
-
-		schedule.jobs.forEach(function (jobSpec) {
-			log.info("\t" + jobSpec.task + " - " + jobSpec.cron);
-
-			var cronJob = new cron.CronJob({
-			    cronTime: jobSpec.cron,
-			    onTick: function() { 
-
-			    	log.info("Running task " + jobSpec.task + " at " + (new Date()));
-
-					    	if (config.jobStarted) {
-					    		config.jobStarted(jobSpec.task);
-					    	}
-
-					taskRunner.runTask(jobSpec.task, conf)
-						.then(function () {
-							if (config.jobSucceeded) {
-								config.jobSucceeded(jobSpec.task);
-							}
-						})
-			            .catch(function (err) {		                
-			            	if (config.jobFailed) {
-			            		config.jobFailed(jobSpec.task, err);
-			            	} 
-			            	else {
-			                	log.error('Build failed.');
-			                
-				                if (err.message) {
-				                    log.warn(err.message);
-				                }
-
-				                if (err.stack) {
-				                    log.warn(err.stack);
-				                }
-				                else {
-				                    log.warn('no stack');
-				                }					            		
-			                }
-			            })
-				        .done(function () {
-			        		buildConfig.done();
-				        });			    	
-			    }, 
-			    start: true,
-			});			
-		});
-
+		var taskScheduler = require('task-scheduler');
+		taskScheduler.start(schedule, config.schedulerCallbacks);
 		return;
 	}
 
