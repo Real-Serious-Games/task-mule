@@ -64,14 +64,9 @@ var commandCreateTask = function (log) {
 };
 
 //
-// task-mule schedule
+// Init config prior to running or listing tasks.
 //
-var commandSchedule = function (log) {
-
-	if (!fs.existsSync('schedule.json')) {
-		log.error('Expected scehdule.json to specify the schedule of tasks.');
-		process.exit(1);
-	}
+var initConfig = function () {
 
 	var buildConfig = require(buildFilePath)(conf, log, validate);
 
@@ -91,6 +86,19 @@ var commandSchedule = function (log) {
 	}
 
 	buildConfig.init();
+};
+
+//
+// task-mule schedule
+//
+var commandSchedule = function (log) {
+
+	if (!fs.existsSync('schedule.json')) {
+		log.error('Expected scehdule.json to specify the schedule of tasks.');
+		process.exit(1);
+	}
+
+	initConfig();
 
 	var taskRunner = require('./task-loader.js')({}, log, validate, conf);
 
@@ -104,7 +112,7 @@ var commandSchedule = function (log) {
 // task-mule <task-name>
 //
 var commandRunTask = function (log, requestedTaskName) {
-	
+
 	if (!fs.existsSync(buildFilePath)) {
 		log.error("'build.js' not found, please run task-mule in a directory that has this file.");
 		log.info("Run 'task-mule init' to create a default 'build.js'.")
@@ -117,24 +125,7 @@ var commandRunTask = function (log, requestedTaskName) {
 		process.exit(1);
 	}
 
-	var buildConfig = require(buildFilePath)(conf, log, validate);
-
-	var defaultConfigFilePath = path.join(workingDirectory, 'config.json');
-	if (fs.existsSync(defaultConfigFilePath)) {
-
-		log.verbose("Loading config from file: " + defaultConfigFilePath);
-
-		conf.pushJsonFile(defaultConfigFilePath);
-	}
-
-	conf.pushEnv();
-	conf.pushArgv();
-
-	if (config.defaultConfig) {
-		conf.push(config.defaultConfig)
-	}
-
-	buildConfig.init();
+	initConfig();
 
 	var taskRunner = require('./task-loader.js')({}, log, validate, conf);
 
