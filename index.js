@@ -94,7 +94,7 @@ var initConfig = function () {
 var commandSchedule = function (log) {
 
 	if (!fs.existsSync('schedule.json')) {
-		log.error('Expected scehdule.json to specify the schedule of tasks.');
+		log.error('Expected schedule.json to specify the schedule of tasks.');
 		process.exit(1);
 	}
 
