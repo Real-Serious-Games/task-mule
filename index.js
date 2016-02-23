@@ -17,7 +17,7 @@ var tasksDirectory = path.join(workingDirectory, 'tasks');
 //
 // task-mule init
 //
-var commandInit = function (log) {
+var commandInit = function (config, log) {
 
 	if (fs.existsSync(buildFilePath)) {
 		log.error("Can't overwrite existing 'build.js'.");
@@ -34,7 +34,7 @@ var commandInit = function (log) {
 //
 // task-mule create-task <task-name>
 //
-var commandCreateTask = function (log) {
+var commandCreateTask = function (config, log) {
 
 	var newTaskName = argv._[1];
 	if (!newTaskName) {
@@ -66,7 +66,7 @@ var commandCreateTask = function (log) {
 //
 // Init config prior to running or listing tasks.
 //
-var initConfig = function (log) {
+var initConfig = function (config, log) {
 
 	var buildConfig = require(buildFilePath)(conf, log, validate);
 
@@ -91,14 +91,14 @@ var initConfig = function (log) {
 //
 // task-mule schedule
 //
-var commandSchedule = function (log) {
+var commandSchedule = function (config, log) {
 
 	if (!fs.existsSync('schedule.json')) {
 		log.error('Expected schedule.json to specify the schedule of tasks.');
 		process.exit(1);
 	}
 
-	initConfig(log);
+	initConfig(config, log);
 
 	var taskRunner = require('./task-loader.js')({}, log, validate, conf);
 
@@ -111,7 +111,7 @@ var commandSchedule = function (log) {
 //
 // task-mule <task-name>
 //
-var commandRunTask = function (log, requestedTaskName) {
+var commandRunTask = function (config, log, requestedTaskName) {
 
 	if (!fs.existsSync(buildFilePath)) {
 		log.error("'build.js' not found, please run task-mule in a directory that has this file.");
@@ -125,7 +125,7 @@ var commandRunTask = function (log, requestedTaskName) {
 		process.exit(1);
 	}
 
-	initConfig(log);
+	initConfig(config, log);
 
 	var taskRunner = require('./task-loader.js')({}, log, validate, conf);
 
@@ -203,18 +203,18 @@ module.exports = function (config) {
 
 	var requestedTaskName = config.requestedTaskName || argv._[0];
 	if (requestedTaskName === 'init') {
-		commandInit(log);
+		commandInit(config, log);
 		process.exit(0);
 	}
 	else if (requestedTaskName === 'create-task') {
-		commandCreateTask(log);
+		commandCreateTask(config, log);
 		process.exit(0);
 	}
 	else if (requestedTaskName === 'schedule') {
-		commandSchedule(log);
+		commandSchedule(config, log);
 		return;
 	}
 
-	commandRunTask(log, requestedTaskName);
+	commandRunTask(config, log, requestedTaskName);
 };
 
