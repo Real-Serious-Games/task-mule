@@ -54,7 +54,7 @@ var TaskRunner = function (log) {
 	//
 	// Run a named task with a particular config.
 	//
-	self.runTask = function (requestedTaskName, config) {
+	self.runTask = function (taskName, config) {
 
 		assert.isString(taskName);
 		assert.isObject(config);
