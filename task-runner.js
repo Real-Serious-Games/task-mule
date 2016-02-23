@@ -72,7 +72,7 @@ var TaskRunner = function (log) {
 	
 		configOverride = configOverride || {};
 
-        return self.resolveDependencies(taskName, config);
+        return self.resolveDependencies(taskName, config)
             .then(function () {        
                 var tasksValidated = {}; // Tasks that have been validated.
                 return requestedTask.validate(configOverride, config, tasksValidated);
