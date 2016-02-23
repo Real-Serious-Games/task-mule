@@ -66,7 +66,7 @@ var commandCreateTask = function (log) {
 //
 // Init config prior to running or listing tasks.
 //
-var initConfig = function () {
+var initConfig = function (log) {
 
 	var buildConfig = require(buildFilePath)(conf, log, validate);
 
@@ -98,7 +98,7 @@ var commandSchedule = function (log) {
 		process.exit(1);
 	}
 
-	initConfig();
+	initConfig(log);
 
 	var taskRunner = require('./task-loader.js')({}, log, validate, conf);
 
@@ -125,7 +125,7 @@ var commandRunTask = function (log, requestedTaskName) {
 		process.exit(1);
 	}
 
-	initConfig();
+	initConfig(log);
 
 	var taskRunner = require('./task-loader.js')({}, log, validate, conf);
 
