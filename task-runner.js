@@ -86,7 +86,7 @@ var TaskRunner = function (log) {
                 return requestedTask.invoke(configOverride, config, taskInvoked);
             })
             .then(function () {            
-                var ouputMessage = 'Build completed';
+                var ouputMessage = taskName + ' completed';
 
                 if (config.get('timed')) {
                     stopWatch.stop();
