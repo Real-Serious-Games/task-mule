@@ -136,7 +136,7 @@ var TaskRunner = function (log) {
         assert.isString(taskName);
     	assert.isObject(config);
 
-        var task = taskMap[requestedTaskName];
+        var task = taskMap[taskName];
         if (!task) {
             throw new Error("Failed to find task: " + taskName);
         }        
