@@ -104,7 +104,8 @@ var commandSchedule = function (config, log) {
 
 	var schedule = JSON.parse(fs.readFileSync('schedule.json', 'utf8'));
 
-	var taskScheduler = require('./task-scheduler');
+	var TaskScheduler = require('./task-scheduler');
+	var taskScheduler = new TaskScheduler(taskRunner, config, log);
 	taskScheduler.start(schedule, config.schedulerCallbacks);
 };
 

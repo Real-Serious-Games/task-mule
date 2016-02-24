@@ -1,6 +1,8 @@
 'use strict';
 
 var cron = require('cron');
+var assert = require('chai').assert;
+var conf = require('confucious');
 
 var TaskScheduler = function (taskRunner, config, log) {
 	
@@ -64,9 +66,7 @@ var TaskScheduler = function (taskRunner, config, log) {
 				                }					            		
 			                }
 			            })
-				        .done(function () {
-			        		buildConfig.done();
-				        });			    	
+				        .done();			    	
 			    }, 
 			    start: true,
 			});			
