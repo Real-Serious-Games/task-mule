@@ -137,6 +137,16 @@ function Task(taskName, relativeFilePath, fullFilePath, log, validate, taskRunne
                     resolvedDependencies.forEach(function (dependency) {
                             dependency.resolvedTask = taskRunner.getTask(dependency.task);
                         });
+
+                    return E.from(resolvedDependencies)
+                        .select(function (dependency) {
+                            return dependency.resolvedTask;
+                        })
+                        .aggregate(Promise.resolve(), function (prevPromise, dependencyTask) {
+                            return prevPromise.then(function () {
+                                    return dependencyTask.resolveDependencies(config);
+                                });
+                        });
                 });
         }
         catch (err) {
