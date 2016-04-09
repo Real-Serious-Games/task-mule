@@ -216,6 +216,6 @@ module.exports = function (config) {
 		return;
 	}
 
-	commandRunTask(config, log, requestedTaskName);
+	return commandRunTask(config, log, requestedTaskName);
 };
 
