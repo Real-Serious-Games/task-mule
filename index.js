@@ -86,6 +86,8 @@ var initConfig = function (config, log) {
 	}
 
 	buildConfig.init();
+
+	return buildConfig;
 };
 
 //
@@ -126,7 +128,7 @@ var commandRunTask = function (config, log, requestedTaskName) {
 		process.exit(1);
 	}
 
-	initConfig(config, log);
+	var buildConfig = initConfig(config, log);
 
 	var taskRunner = require('./task-loader.js')({}, log, validate, conf);
 
