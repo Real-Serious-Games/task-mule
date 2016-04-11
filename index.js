@@ -11,7 +11,7 @@ var S = require('string');
 var AsciiTable = require('ascii-table');
 
 var workingDirectory = process.cwd();
-var buildFilePath = path.join(workingDirectory, "build.js");
+var buildFilePath = path.join(workingDirectory, "mule.js");
 var tasksDirectory = path.join(workingDirectory, 'tasks');
 
 //
@@ -20,14 +20,14 @@ var tasksDirectory = path.join(workingDirectory, 'tasks');
 var commandInit = function (config, log) {
 
 	if (fs.existsSync(buildFilePath)) {
-		log.error("Can't overwrite existing 'build.js'.");
+		log.error("Can't overwrite existing 'mule.js'.");
 		process.exit(1);
 	}
 
-	// Auto create build.js.
-	var defaultBuildJs = path.join(__dirname, 'build.js');
+	// Auto create mule.js.
+	var defaultBuildJs = path.join(__dirname, 'template', 'mule.js');
 	fs.copySync(defaultBuildJs, buildFilePath);
-	log.info("Created new 'build.js' at " + buildFilePath);
+	log.info("Created new 'mule.js' at " + buildFilePath);
 	process.exit(0);
 };
 
@@ -58,7 +58,7 @@ var commandCreateTask = function (config, log) {
 		process.exit(1);
 	}
 
-	var defaultTaskFile = path.join(__dirname, 'default-task.js');
+	var defaultTaskFile = path.join(__dirname, 'template', 'task.js');
 	fs.copySync(defaultTaskFile, newTaskFilePath);
 	log.info("Created new task file at " + newTaskFilePath);
 };
@@ -117,8 +117,8 @@ var commandSchedule = function (config, log) {
 var commandRunTask = function (config, log, requestedTaskName) {
 
 	if (!fs.existsSync(buildFilePath)) {
-		log.error("'build.js' not found, please run task-mule in a directory that has this file.");
-		log.info("Run 'task-mule init' to create a default 'build.js'.")
+		log.error("'mule.js' not found, please run task-mule in a directory that has this file.");
+		log.info("Run 'task-mule init' to create a default 'mule.js'.")
 		process.exit(1);
 	}
 
