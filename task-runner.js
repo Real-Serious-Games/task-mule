@@ -2,7 +2,7 @@
 
 var assert = require('chai').assert;
 var AsciiTable = require('ascii-table');
-var metrics = require('statman');
+var Stopwatch = require('statman-stopwatch');
 var E = require('linq');
 
 // 

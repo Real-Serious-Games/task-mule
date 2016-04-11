@@ -3,6 +3,7 @@
 var cron = require('cron');
 var assert = require('chai').assert;
 var conf = require('confucious');
+var Stopwatch = require('statman-stopwatch');
 
 var TaskScheduler = function (taskRunner, config, log) {
 	
@@ -34,25 +35,34 @@ var TaskScheduler = function (taskRunner, config, log) {
 
 			    	log.info("Running job " + jobSpec.name + " at " + (new Date()));
 
+					var stopwatch = new Stopwatch();
+					stopwatch.start();
+
 			    	if (callbacks.jobStarted) {
 			    		callbacks.jobStarted(jobSpec);
 			    	}
 
 					taskRunner.runTask(jobSpec.task, conf)
 						.then(function () {
+							stopwatch.stop();
+							var elapsedTimeMins = stopwatch.read()/1000.0/60.0; 
+
 							if (callbacks.jobSucceeded) {
-								callbacks.jobSucceeded(jobSpec);
+								callbacks.jobSucceeded(jobSpec, elapsedTimeMins);
 							}
 							else {
-								log.info('Scheduled job completed: ' + jobSpec.name);
+								log.info('Scheduled job "' + jobSpec.name + '" completed in ' + elapsedTimeMins + ' minutes.');
 							}
 						})
 			            .catch(function (err) {		                
+							stopwatch.stop();
+							var elapsedTimeMins = stopwatch.read()/1000.0/60.0; 
+
 			            	if (callbacks.jobFailed) {
-			            		callbacks.jobFailed(jobSpec, err);
+			            		callbacks.jobFailed(jobSpec, elapsedTimeMins, err);
 			            	} 
 			            	else {
-			                	log.error('Scheduled job failed: ' + jobSpec.name);
+			                	log.error('Scheduled job "' + jobSpec.name + '"" failed after ' + elapsedTimeMins + ' minutes.');
 			                
 				                if (err.message) {
 				                    log.warn(err.message);
