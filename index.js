@@ -200,9 +200,6 @@ module.exports = function (config) {
 	var log = config.log || require('./log')(argv.verbose, argv.nocolors);
 
 	global.runCmd = require('./run-cmd')(log);
-	global.path = require('path');
-	global.fs = require('fs-extra');
-	global.quote = require('quote');
 
 	var requestedTaskName = config.requestedTaskName || argv._[0];
 	if (requestedTaskName === 'init') {
