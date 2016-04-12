@@ -216,23 +216,23 @@ module.exports = function (config) {
 
 	var requestedTaskName = config.requestedTaskName || argv._[0];
 	if (requestedTaskName === 'init') {
-		commandInit(config, log);
+		commandInit(config);
 		process.exit(0);
 	}
 	else if (requestedTaskName === 'create-task') {
-		commandCreateTask(config, log);
+		commandCreateTask(config);
 		process.exit(0);
 	}
 	else {
 		if (!fs.existsSync(buildFilePath)) {
-			log.error("'mule.js' not found, please run task-mule in a directory that has this file.");
-			log.info("Run 'task-mule init' to create a default 'mule.js'.")
+			consoleLog.error("'mule.js' not found, please run task-mule in a directory that has this file.");
+			consoleLog.info("Run 'task-mule init' to create a default 'mule.js'.")
 			process.exit(1);
 		}
 
 		if (!fs.existsSync(tasksDirectory)) {
-			log.error("'tasks' directory doesn't exist.");
-			log.info("Run 'task-mule create-task <task-name> to create your first task.");
+			consoleLog.error("'tasks' directory doesn't exist.");
+			consoleLog.info("Run 'task-mule create-task <task-name> to create your first task.");
 			process.exit(1);
 		}
 
