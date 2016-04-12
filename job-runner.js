@@ -66,8 +66,7 @@ var JobRunner = function (taskRunner, log, callbacks) {
             }
             else {
                 log.error("Unhandled exception occurred.");
-                log.error(err.message);
-                log.info(err.stack);
+                log.error(err && err.stack || err);
             }            
         };
 
