@@ -101,7 +101,7 @@ var commandSchedule = function (config, log) {
 		process.exit(1);
 	}
 
-	initConfig(config, log);
+	var buildConfig = initConfig(config, log);
 
 	var taskRunner = require('./task-loader.js')({}, log, validate, conf);
 
@@ -109,7 +109,7 @@ var commandSchedule = function (config, log) {
 
 	var TaskScheduler = require('./task-scheduler');
 	var taskScheduler = new TaskScheduler(taskRunner, config, log);
-	taskScheduler.start(schedule, config.schedulerCallbacks);
+	taskScheduler.start(schedule, buildConfig);
 };
 
 //
