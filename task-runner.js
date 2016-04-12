@@ -9,11 +9,12 @@ var E = require('linq');
 // Responsible for finding and running tasks.
 //
 
-var TaskRunner = function (log) {
+var TaskRunner = function (log, unhandledExceptionCallback) {
 
 	var self = this;
 
     assert.isFunction(log.info);
+    assert.isFunction(unhandledExceptionCallback);
 
 	//
 	// All tasks.
@@ -58,23 +59,27 @@ var TaskRunner = function (log) {
 
 		assert.isString(taskName);
 		assert.isObject(config);
-
-        if (configOverride) {
-            assert.isObject(configOverride);
-        }
+        assert.isObject(configOverride);
 
         var requestedTask = taskMap[taskName];
         if (!requestedTask) {
             throw new Error("Failed to find task: " + taskName);
         }
 
-        var stopWatch = new metrics.Stopwatch();
+        var stopWatch = new Stopwatch();
         
         if (config.get('timed')) {
             stopWatch.start();
         }
+
+        var uncaughtExceptionCount = 0;
+        var uncaughtExceptionHandler = function (err) {
+            ++uncaughtExceptionCount;
+
+            unhandledExceptionCallback(err);
+        };
 	
-		configOverride = configOverride || {};
+        process.on('uncaughtException', uncaughtExceptionHandler);
 
         return self.resolveDependencies(taskName, config)
             .then(function () {        
@@ -94,7 +99,19 @@ var TaskRunner = function (log) {
                 }
 
                 log.info(ouputMessage);
-            });
+            })
+            .catch(function (err) {
+                process.removeListener('uncaughtException', uncaughtExceptionHandler);
+                throw err;
+            })
+            .then(function () {
+                if (uncaughtExceptionCount > 0) {
+                    throw new Error(' Unhandled exceptions (' + uncaughtExceptions.length + ') occurred while running task ' + taskName);
+                };
+
+                process.removeListener('uncaughtException', uncaughtExceptionHandler);
+            })
+            ;
 	};
 
 

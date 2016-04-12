@@ -9,6 +9,7 @@ var chalk = require('chalk');
 var validate = require('./validate');
 var S = require('string');
 var AsciiTable = require('ascii-table');
+var assert = require('chai').assert;
 
 var workingDirectory = process.cwd();
 var buildFilePath = path.join(workingDirectory, "mule.js");
@@ -130,10 +131,15 @@ var commandRunTask = function (config, log, requestedTaskName) {
 
 	var buildConfig = initConfig(config, log);
 
-	var taskRunner = require('./task-loader.js')({}, log, validate, conf);
+	var unhandledExceptionCallback = buildConfig.unhandledException || function (err) {
+			console.error("Unhandled exception occurred.");
+			console.error(err);
+		};
+
+	var taskRunner = require('./task-loader.js')({}, log, validate, conf, unhandledExceptionCallback);
 
 	if (requestedTaskName) {
-	    return taskRunner.runTask(requestedTaskName, conf)
+	    return taskRunner.runTask(requestedTaskName, conf, {})
             .catch(function (err) {
                 
                 log.error('Build failed.');
