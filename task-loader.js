@@ -11,15 +11,11 @@ var assert = require('chai').assert;
 //
 // Automatic loading of Grunt tasks from a collection of files.
 //
-module.exports = function (autoLoadConfig, log, validate, config, callbacks) {
+module.exports = function (autoLoadConfig, log, validate, config) {
 
     assert.isObject(autoLoadConfig);
     assert.isObject(validate);
     assert.isObject(config);
-    assert.isObject(callbacks);
-    if (callbacks.unhandledExceptionCallback) {
-        assert.isFunction(callbacks.unhandledExceptionCallback);
-    }
 
     // 
     // Load in all tasks from files.
@@ -28,7 +24,7 @@ module.exports = function (autoLoadConfig, log, validate, config, callbacks) {
     var tasksInvoked = {}; // Remembers tasks that have been invoked, so they aren't invoked again.
     var tasksDir = autoLoadConfig.tasksDir || path.join(process.cwd(), "tasks");
 
-    var taskRunner = new TaskRunner(log, callbacks);
+    var taskRunner = new TaskRunner(log);
     
     //
     // Strips an extension from a filename.

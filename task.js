@@ -1,7 +1,7 @@
 var assert = require('chai').assert;
 var E = require('linq');
 var S = require('string');
-var metrics = require('statman');
+var Stopwatch = require('statman-stopwatch');
 var Promise = require('promise');
 var sugar = require('sugar');
 var Q = require('q');
@@ -305,7 +305,7 @@ function Task(taskName, relativeFilePath, fullFilePath, log, validate, taskRunne
                 }
 
                 try {
-                    var stopWatch = new metrics.Stopwatch();
+                    var stopWatch = new Stopwatch();
                 
                     if (config.get('timed')) {
                         stopWatch.start();

@@ -9,15 +9,11 @@ var E = require('linq');
 // Responsible for finding and running tasks.
 //
 
-var TaskRunner = function (log, callbacks) {
+var TaskRunner = function (log) {
 
 	var self = this;
 
     assert.isFunction(log.info);
-    assert.isObject(callbacks);
-    if (callbacks.unhandledExceptionCallback) {
-        assert.isFunction(callbacks.unhandledExceptionCallback);
-    }
 
 	//
 	// All tasks.
@@ -43,13 +39,13 @@ var TaskRunner = function (log, callbacks) {
 	//
 	// Get a task by name, throws exception if task doesn't exist.
 	//
-	self.getTask = function (requestedTaskName) {
+	self.getTask = function (taskName) {
 
-		assert.isString(requestedTaskName);
+		assert.isString(taskName);
 
-        var task = taskMap[requestedTaskName];
+        var task = taskMap[taskName];
         if (!task) {
-            throw new Error("Task not found: " + requestedTaskName);
+            throw new Error("Task not found: " + taskName);
         }
 
         return task;
@@ -69,26 +65,8 @@ var TaskRunner = function (log, callbacks) {
             throw new Error("Failed to find task: " + taskName);
         }
 
-        var stopWatch = new Stopwatch();
-        
-        if (config.get('timed')) {
-            stopWatch.start();
-        }
-
-        var uncaughtExceptionCount = 0;
-        var uncaughtExceptionHandler = function (err) {
-            ++uncaughtExceptionCount;
-
-            if (callbacks.unhandledExceptionCallback) {
-                callbacks.unhandledExceptionCallback(err);
-            }
-            else {
-                log.error("Unhandled exception occurred.");
-                log.error(err);
-            }            
-        };
-	
-        process.on('uncaughtException', uncaughtExceptionHandler);
+        var stopwatch = new Stopwatch();
+        stopwatch.start();
 
         return self.resolveDependencies(taskName, config)
             .then(function () {        
@@ -100,25 +78,26 @@ var TaskRunner = function (log, callbacks) {
                 return requestedTask.invoke(configOverride, config, taskInvoked);
             })
             .then(function () {            
-                var ouputMessage = taskName + ' completed';
-
-                if (config.get('timed')) {
-                    stopWatch.stop();
-                    ouputMessage += ": " + (stopWatch.read() * 0.001).toFixed(2) + " seconds";
-                }
-
-                log.info(ouputMessage);
+                stopwatch.stop();
+                log.info(taskName + ' completed: ' + (stopwatch.read() * 0.001).toFixed(2) + " seconds");
             })
             .catch(function (err) {
-                process.removeListener('uncaughtException', uncaughtExceptionHandler);
-                throw err;
-            })
-            .then(function () {
-                if (uncaughtExceptionCount > 0) {
-                    throw new Error(' Unhandled exceptions (' + uncaughtExceptionCount + ') occurred while running task ' + taskName);
-                };
+                stopwatch.stop();
 
-                process.removeListener('uncaughtException', uncaughtExceptionHandler);
+                log.error(taskName + ' failed: ' + elapsedTimeMins + ' minutes.');
+            
+                if (err.message) {
+                    log.warn(err.message);
+                }
+
+                if (err.stack) {
+                    log.warn(err.stack);
+                }
+                else {
+                    log.warn('no stack');
+                }                                       
+
+                throw err;
             })
             ;
 	};

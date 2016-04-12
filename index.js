@@ -10,6 +10,8 @@ var validate = require('./validate');
 var S = require('string');
 var AsciiTable = require('ascii-table');
 var assert = require('chai').assert;
+var loadTasks = require('./task-loader')
+var JobRunner = require('./job-runner');
 
 var workingDirectory = process.cwd();
 var buildFilePath = path.join(workingDirectory, "mule.js");
@@ -103,12 +105,13 @@ var commandSchedule = function (config, log) {
 
 	var buildConfig = initConfig(config, log);
 
-	var taskRunner = require('./task-loader.js')({}, log, validate, conf);
+	var taskRunner = loadTasks({}, log, validate, conf);
+	var jobRunner = new JobRunner(taskRunner, log, buildConfig);
 
 	var schedule = JSON.parse(fs.readFileSync('schedule.json', 'utf8'));
 
 	var TaskScheduler = require('./task-scheduler');
-	var taskScheduler = new TaskScheduler(taskRunner, config, log);
+	var taskScheduler = new TaskScheduler(jobRunner, config, log);
 	taskScheduler.start(schedule, buildConfig);
 };
 
@@ -131,10 +134,11 @@ var commandRunTask = function (config, log, requestedTaskName) {
 
 	var buildConfig = initConfig(config, log);
 
-	var taskRunner = require('./task-loader.js')({}, log, validate, conf, buildConfig);
+	var taskRunner = loadTasks({}, log, validate, conf);
+	var jobRunner = new JobRunner(taskRunner, log, buildConfig);
 
 	if (requestedTaskName) {
-	    return taskRunner.runTask(requestedTaskName, conf, {})
+	    return jobRunner.runTask(requestedTaskName, conf, {})
             .catch(function (err) {
                 
                 log.error('Build failed.');
