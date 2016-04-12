@@ -131,12 +131,7 @@ var commandRunTask = function (config, log, requestedTaskName) {
 
 	var buildConfig = initConfig(config, log);
 
-	var unhandledExceptionCallback = buildConfig.unhandledException || function (err) {
-			console.error("Unhandled exception occurred.");
-			console.error(err);
-		};
-
-	var taskRunner = require('./task-loader.js')({}, log, validate, conf, unhandledExceptionCallback);
+	var taskRunner = require('./task-loader.js')({}, log, validate, conf, buildConfig);
 
 	if (requestedTaskName) {
 	    return taskRunner.runTask(requestedTaskName, conf, {})

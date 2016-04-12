@@ -9,12 +9,15 @@ var E = require('linq');
 // Responsible for finding and running tasks.
 //
 
-var TaskRunner = function (log, unhandledExceptionCallback) {
+var TaskRunner = function (log, callbacks) {
 
 	var self = this;
 
     assert.isFunction(log.info);
-    assert.isFunction(unhandledExceptionCallback);
+    assert.isObject(callbacks);
+    if (callbacks.unhandledExceptionCallback) {
+        assert.isFunction(callbacks.unhandledExceptionCallback);
+    }
 
 	//
 	// All tasks.
@@ -76,7 +79,13 @@ var TaskRunner = function (log, unhandledExceptionCallback) {
         var uncaughtExceptionHandler = function (err) {
             ++uncaughtExceptionCount;
 
-            unhandledExceptionCallback(err);
+            if (callbacks.unhandledExceptionCallback) {
+                callbacks.unhandledExceptionCallback(err);
+            }
+            else {
+                log.error("Unhandled exception occurred.");
+                log.error(err);
+            }            
         };
 	
         process.on('uncaughtException', uncaughtExceptionHandler);
@@ -106,7 +115,7 @@ var TaskRunner = function (log, unhandledExceptionCallback) {
             })
             .then(function () {
                 if (uncaughtExceptionCount > 0) {
-                    throw new Error(' Unhandled exceptions (' + uncaughtExceptions.length + ') occurred while running task ' + taskName);
+                    throw new Error(' Unhandled exceptions (' + uncaughtExceptionCount + ') occurred while running task ' + taskName);
                 };
 
                 process.removeListener('uncaughtException', uncaughtExceptionHandler);
