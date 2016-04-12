@@ -2,7 +2,6 @@
 
 var assert = require('chai').assert;
 var AsciiTable = require('ascii-table');
-var Stopwatch = require('statman-stopwatch');
 var E = require('linq');
 
 // 
@@ -65,9 +64,6 @@ var TaskRunner = function (log) {
             throw new Error("Failed to find task: " + taskName);
         }
 
-        var stopwatch = new Stopwatch();
-        stopwatch.start();
-
         return self.resolveDependencies(taskName, config)
             .then(function () {        
                 var tasksValidated = {}; // Tasks that have been validated.
@@ -76,28 +72,6 @@ var TaskRunner = function (log) {
             .then(function () {
                 var taskInvoked = {}; // Tasks that have been invoked.
                 return requestedTask.invoke(configOverride, config, taskInvoked);
-            })
-            .then(function () {            
-                stopwatch.stop();
-                log.info(taskName + ' completed: ' + (stopwatch.read() * 0.001).toFixed(2) + " seconds");
-            })
-            .catch(function (err) {
-                stopwatch.stop();
-
-                log.error(taskName + ' failed: ' + elapsedTimeMins + ' minutes.');
-            
-                if (err.message) {
-                    log.warn(err.message);
-                }
-
-                if (err.stack) {
-                    log.warn(err.stack);
-                }
-                else {
-                    log.warn('no stack');
-                }                                       
-
-                throw err;
             })
             ;
 	};

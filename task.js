@@ -20,7 +20,6 @@ function Task(taskName, relativeFilePath, fullFilePath, log, validate, taskRunne
     assert.isFunction(log.error);
     assert.isFunction(log.warn);
     assert.isFunction(log.verbose);
-    assert.isFunction(log.task);
     assert.isObject(validate);
     assert.isObject(taskRunner);    
     assert.isFunction(taskRunner.getTask);
@@ -292,10 +291,6 @@ function Task(taskName, relativeFilePath, fullFilePath, log, validate, taskRunne
             .then(function () {
                 tasksInvoked[taskKey] = true; // Make that the task has been invoked.
 
-                if (config.get('verbose')) {
-                    log.info("Running " + taskName);
-                }
-
                 if (!self.module) {
                     log.warn("Task not implemented: " + taskName);
                     return;
@@ -304,59 +299,42 @@ function Task(taskName, relativeFilePath, fullFilePath, log, validate, taskRunne
                     return;   
                 }
 
+                log.info(taskName);
+
                 try {
                     var stopWatch = new Stopwatch();
-                
-                    if (config.get('timed')) {
-                        stopWatch.start();
-                    }
+                    stopWatch.start();
 
                     var resultingPromise = self.module.invoke.apply(this, [config]);
                     if (resultingPromise) {
                         return resultingPromise.then(function (result) {
-                            var ouputMessage = taskName;
-
-                            if (config.get('timed')) {
                                 stopWatch.stop();
-                                ouputMessage += ": " + (stopWatch.read() * 0.001).toFixed(2) + " seconds";
-                            }
-
-                            if (config.get('verbose')) {
-                                log.info("Completed " + ouputMessage);
-                            }
-                            else {
-                                log.task(ouputMessage);
-                            }
-                            return result;
-                        })
+                                log.info(taskName + " completed : " + (stopWatch.read() * 0.001).toFixed(2) + " seconds");
+                                return result;
+                            })
+                            .catch(function (ex) {
+                                stopWatch.stop();
+                                log.info(taskName + " failed : " + (stopWatch.read() * 0.001).toFixed(2) + " seconds");
+                                throw ex;
+                            })
                     }
                     else {
-                        var ouputMessage = taskName;
-                    
-                        if (config.get('timed')) {
-                            stopWatch.stop();
-                            ouputMessage += ": " + (stopWatch.read() * 0.001).toFixed(2) + " seconds";
-                        }
-
-                        if (config.get('verbose')) {
-                            log.info("Completed " + ouputMessage);
-                        }
-                        else {
-                            log.task(ouputMessage);
-                        }
+                        stopWatch.stop();
+                        log.info(taskName + " completed : " + (stopWatch.read() * 0.001).toFixed(2) + " seconds");
                     }
                 }
-                catch (e) {
-                    log.error("Exception while invoking task: " + taskName);
-                    throw e;
+                catch (ex) {
+                    stopWatch.stop();
+                    log.info(taskName + " exception : " + (stopWatch.read() * 0.001).toFixed(2) + " seconds");
+                    throw ex;
                 }
             })
             .then(function () {
                 config.pop(); // Restore previous config.
             })
-            .catch(function (e) {
+            .catch(function (ex) {
                 config.pop();  // Restore previous config.
-                throw e; // Propagate error.
+                throw ex; // Propagate error.
             });        
     };
 
