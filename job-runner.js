@@ -39,6 +39,66 @@ var JobRunner = function (taskRunner, log, callbacks) {
         return taskRunner.getTask(taskName);
 	};
 
+    var taskStarted = function (taskName) {
+        var promise;
+
+        if (callbacks.taskStarted) {
+            promise = callbacks.taskStarted({
+                name: taskName 
+            });
+        }
+
+        if (!promise) {
+            promise = Promise.resolve();
+        }
+
+        return promise;
+    };
+
+    var taskSuccess = function (taskName, stopwatch) {
+        var promise;
+
+        if (callbacks.taskSuccess) {
+            var elapsedTimeMins = stopwatch.read()/1000.0/60.0; 
+            promise = callbacks.taskSuccess({ name: taskName }, elapsedTimeMins);
+        }
+
+        if (!promise) {
+            promise = Promise.resolve();
+        }
+
+        return promise;
+    };
+
+    var taskFailed = function (taskName, err, stopwatch) {
+        var promise;
+
+        if (callbacks.taskFailure) {
+            var elapsedTimeMins = stopwatch.read()/1000.0/60.0; 
+            promise = callbacks.taskFailure({ name: taskName }, elapsedTimeMins, err);
+        }         
+
+        if (!promise) {
+            promise = Promise.resolve();
+        }
+
+        return promise;
+    };
+
+    var taskDone = function (taskName) {
+        var promise;
+
+        if (callbacks.taskDone) {
+            promise = callbacks.taskDone({ name: taskName });
+        }         
+
+        if (!promise) {
+            promise = Promise.resolve();
+        }
+
+        return promise;
+    };
+
 	//
 	// Run a named task with a particular config.
 	//
@@ -50,12 +110,6 @@ var JobRunner = function (taskRunner, log, callbacks) {
 
         var stopwatch = new Stopwatch();
         stopwatch.start();
-
-        if (callbacks.taskStarted) {
-            callbacks.taskStarted({
-                name: taskName 
-            });
-        }
 
         var uncaughtExceptionCount = 0;
         var uncaughtExceptionHandler = function (err) {
@@ -72,43 +126,37 @@ var JobRunner = function (taskRunner, log, callbacks) {
 
         process.on('uncaughtException', uncaughtExceptionHandler);
 
-        return taskRunner.runTask(taskName, config, configOverride)
+        return taskStarted(taskName)
             .then(function () {
-                stopwatch.stop();
-
-                if (callbacks.taskSuccess) {
-                    var elapsedTimeMins = stopwatch.read()/1000.0/60.0; 
-                    callbacks.taskSuccess({ name: taskName }, elapsedTimeMins);
-                }
-            })
-            .catch(function (err) {
-                stopwatch.stop();
-
-                if (callbacks.taskFailure) {
-                    var elapsedTimeMins = stopwatch.read()/1000.0/60.0; 
-                    callbacks.taskFailure({ name: taskName }, elapsedTimeMins, err);
-                } 
-
-                process.removeListener('uncaughtException', uncaughtExceptionHandler);
-                throw err;
+                return taskRunner.runTask(taskName, config, configOverride);
             })
             .then(function () {
                 if (uncaughtExceptionCount > 0) {
                     throw new Error(' Unhandled exceptions (' + uncaughtExceptionCount + ') occurred while running task ' + taskName);
                 };
-
-                process.removeListener('uncaughtException', uncaughtExceptionHandler);
-            })
-            .catch(function (err) {
-                if (callbacks.taskDone) {
-                    callbacks.taskDone({ name: taskName });
-                }
-                throw err;
             })
             .then(function () {
-                if (callbacks.taskDone) {
-                    callbacks.taskDone({ name: taskName });
-                }
+                stopwatch.stop();
+                process.removeListener('uncaughtException', uncaughtExceptionHandler);
+                return taskSuccess(taskName, stopwatch);
+            })
+            .then(function () {
+                return taskDone(taskName);
+            })
+            .catch(function (err) {
+                stopwatch.stop();
+                process.removeListener('uncaughtException', uncaughtExceptionHandler);
+
+                return taskFailed(taskName, err, stopwatch)
+                    .then(function () {
+                        throw err;
+                    });
+            })
+            .catch(function (err) {
+                return taskDone(taskName)
+                    .then(function () {
+                        throw err;                        
+                    })
             })
             ;
 	};
