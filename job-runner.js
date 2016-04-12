@@ -99,6 +99,17 @@ var JobRunner = function (taskRunner, log, callbacks) {
 
                 process.removeListener('uncaughtException', uncaughtExceptionHandler);
             })
+            .catch(function (err) {
+                if (callbacks.taskDone) {
+                    callbacks.taskDone({ name: taskName });
+                }
+                throw err;
+            })
+            .then(function () {
+                if (callbacks.taskDone) {
+                    callbacks.taskDone({ name: taskName });
+                }
+            })
             ;
 	};
 
