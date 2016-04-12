@@ -38,8 +38,8 @@ var TaskScheduler = function (taskRunner, config, log) {
 					var stopwatch = new Stopwatch();
 					stopwatch.start();
 
-			    	if (callbacks.jobStarted) {
-			    		callbacks.jobStarted(jobSpec);
+			    	if (callbacks.taskStarted) {
+			    		callbacks.taskStarted(jobSpec);
 			    	}
 
 					taskRunner.runTask(jobSpec.task, conf)
@@ -47,8 +47,8 @@ var TaskScheduler = function (taskRunner, config, log) {
 							stopwatch.stop();
 							var elapsedTimeMins = stopwatch.read()/1000.0/60.0; 
 
-							if (callbacks.jobSucceeded) {
-								callbacks.jobSucceeded(jobSpec, elapsedTimeMins);
+							if (callbacks.taskSuccess) {
+								callbacks.taskSuccess(jobSpec, elapsedTimeMins);
 							}
 							else {
 								log.info('Scheduled job "' + jobSpec.name + '" completed in ' + elapsedTimeMins + ' minutes.');
@@ -58,8 +58,8 @@ var TaskScheduler = function (taskRunner, config, log) {
 							stopwatch.stop();
 							var elapsedTimeMins = stopwatch.read()/1000.0/60.0; 
 
-			            	if (callbacks.jobFailed) {
-			            		callbacks.jobFailed(jobSpec, elapsedTimeMins, err);
+			            	if (callbacks.taskFailure) {
+			            		callbacks.taskFailure(jobSpec, elapsedTimeMins, err);
 			            	} 
 			            	else {
 			                	log.error('Scheduled job "' + jobSpec.name + '"" failed after ' + elapsedTimeMins + ' minutes.');
