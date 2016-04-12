@@ -82,6 +82,11 @@ var initConfig = function (config, log) {
 	}
 
 	conf.pushEnv();
+
+	if (buildConfig.initConfig) {
+		buildConfig.initConfig();
+	}
+
 	conf.pushArgv();
 
 	if (config.defaultConfig) {
