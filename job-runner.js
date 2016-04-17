@@ -104,6 +104,8 @@ var JobRunner = function (taskRunner, log, callbacks) {
 	//
 	self.runTask = function (taskName, config, configOverride) {
 
+        configOverride = configOverride || {};
+
 		assert.isString(taskName);
 		assert.isObject(config);
         assert.isObject(configOverride);
