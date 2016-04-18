@@ -33,8 +33,7 @@ var TaskScheduler = function (taskRunner, config, log) {
 			    cronTime: jobSpec.cron,
 			    onTick: function() { 
 
-					taskRunner.runTask(jobSpec.task, conf)
-				        .done();			    	
+					taskRunner.runTask(jobSpec.task, conf);	
 			    }, 
 			    start: true,
 			});			
