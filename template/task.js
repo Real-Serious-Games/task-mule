@@ -7,30 +7,34 @@ module.exports = function (log, validate) {
         description: "<description of your task>",
         
         // Tasks that this one depends on (these tasks will run before this one).
-        dependsOn: [], 
+        dependsOn: [
+            // ... list of dependencies ...
+        ], 
 
         //
         // Validate configuration for the task.
-        // Throw an exception to fail the build.
+        // Throw an exception to fail the task.
         //
         validate: function (config) {
-            //todo:
+            // ... validate input to the task ...
         },
 
         //
         // Configure prior to invoke dependencies for this task.
         //
         configure: function (config) {
-            //todo:
+            // ... modify configuration prior to invoking dependencies ...
         },
         
         //
         // Invoke the task. Peform the operations required of the task.
-        // Throw an exception to fail the build.
         // Return a promise for async tasks.
+        // Throw an exception or return a rejected promise to fail the task.
         //
         invoke: function (config) {
-            //todo:
+            // ... do the action of the task ...
+
+            // ... return a promise for asynchronous tasks ...
         },
     };
 };

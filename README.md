@@ -28,16 +28,18 @@ NOTE: This documention is currently under construction. Please check back again 
   - [Validation](#validation)
 - [Advanced stuff](#advanced-stuff)
   - [Why promises?](#why-promises)
-  - [More on running commands](#more-on-running-commands)
-  - [Task execution order](#task-execution-order)
-  - [More on task dependencies](#more-on-task-dependencies)
-  - [Running dependencies manually](#running-dependencies-manually)
-  - [Advanced configuration](#advanced-configuration)
-  - [Task failure](#task-failure)
-  - [Scheduled Tasks](#scheduled-tasks)
+  - [Return values](#return-values)
+  - [Converting callbacks to promises](#converting-callbacks-to-promises)
   - [*mule.js* layout](#mulejs-layout)
   - [Tasks file system structure](#tasks-file-system-structure)
   - [Task layout](#task-layout)
+  - [Task execution order](#task-execution-order)
+  - [More on task dependencies](#more-on-task-dependencies)
+  - [Running dependencies manually](#running-dependencies-manually)
+  - [More on running commands](#more-on-running-commands)
+  - [Advanced configuration](#advanced-configuration)
+  - [Task failure](#task-failure)
+  - [Scheduled Tasks](#scheduled-tasks)
   - [Task validation](#task-validation)
   - [Invoking Task-Mule from code](#invoking-task-mule-from-code)
   - [Invoking Task-Mule from an automated test](#invoking-task-mule-from-an-automated-test)
@@ -45,8 +47,6 @@ NOTE: This documention is currently under construction. Please check back again 
   - [Bring your own logger](#bring-your-own-logger)
   - [Custom handling for task success/failure](#custom-handling-for-task-successfailure)
   - [Validation](#validation-1)
-  - [Task return values](#task-return-values)
-  - [Wrapping synchronous functions as promises](#wrapping-synchronous-functions-as-promises)
   - [Implementing command line documentation for your script](#implementing-command-line-documentation-for-your-script)
 - [Future Plans](#future-plans)
 
@@ -62,6 +62,7 @@ Task-Mule relies on [npm](https://www.npmjs.com/). Install the dependencies you 
 
 ## Features
 
+- Both procedural and config driven scripts. Create your tasks in code, provide options via configuration.
 - Run a task and all its dependencies.
 - Scheduled task running.
 - Install dependencies via npm. 
@@ -654,9 +655,72 @@ Creating a new *mule.js* will give you the following template, which has stubs f
 	};
 
 
-### Tasks file system structure
+### Task-Mule file system structure
+
+A Task-Mule automation script is structured in the file system as follows.
+
+	my-script/
+		node-modules/
+			task-mule/					-> Local version of Task-Mule 
+			... other npm packages ...	   (this allows different scripts to use different versions).
+		mule.js							-> Task mule entry point.
+		tasks/							-> Directory that contains the tasks.
+			task1.js					-> Each task lives in it's own file 
+			task2.js					   and is named after that file.
+			subdir/
+				nested-task.js			-> Tasks can even be nested under sub-directories
+										   to help group and organise your tasks.
+		some-other-file.js				-> Include any other JavaScript files and require
+										   them into your script.
 
 ### Task layout
+
+Run the following commmand to create a new task with the default layout:
+
+	task-mule create-task <new-task-name>
+
+This creates a new task file in the tasks directory with the following name: <new-task-name>.js.
+
+Here is the default task layout for your enjoyment: 
+
+	module.exports = function (log, validate) {
+	    
+	    return {
+	        
+	        description: "<description of your task>",
+	        
+	        // Tasks that this one depends on (these tasks will run before this one).
+	        dependsOn: [
+				// ... list of dependencies ...
+			], 
+	
+	        //
+	        // Validate configuration for the task.
+	        // Throw an exception to fail the build.
+	        //
+	        validate: function (config) {
+	            // ... validate input to the task ...
+	        },
+	
+	        //
+	        // Configure prior to invoke dependencies for this task.
+	        //
+	        configure: function (config) {
+	            // ... modify configuration prior to invoking dependencies ...
+	        },
+	        
+	        //
+	        // Invoke the task. Peform the operations required of the task.
+	        // Return a promise for async tasks.
+	        // Throw an exception or return a rejected promise to fail the task.
+	        //
+	        invoke: function (config) {
+	            // ... do the action of the task ...
+	
+	            // ... return a promise for asynchronous tasks ...
+	        },
+	    };
+	};
 
 ### Task execution order
 
@@ -724,4 +788,6 @@ Really need to be able to query an individual task for what it does.
 ## Future Plans
 
 - Direct support for Gulp plugins in Task-Mule.
-- Installable Task-Mule tasks.
+- Install complete Task-Mule tasks directly from npm.
+- More advanced ways of passing configuration between tasks.
+- Pipelines of tasks where one task feeds data into the next.
