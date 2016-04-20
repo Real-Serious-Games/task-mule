@@ -556,14 +556,107 @@ Let's look at a Task-Mule task that asynchronously loads a text file and stores 
 	    };
 	};
 
-### More on running commands
+### *mule.js* layout
 
-todo: How does runCmd work exactly.
-runCmd is already promisified.
-What do you get delivered when runCmd resolves?
-What are the options for runCmd
-Why not just use exec/spawn?
-runCmd may not meet your needs, if not we encourgae you to roll your own version based on Node's low level fns.
+*mule.js* is the Task-Mule automation script entry point. It is similar to *Gruntfile* or *Gulp.js* in *Grunt* and *Gulp*.
+
+You can create a new *mule.js* from the template by running the following commmand in the directory for your script:
+
+	task-mule init
+
+Technically it's not necessary to modify *mule.js* in any way to create and run tasks. You can just simply create and edits *task* files in the *tasks* directory and then run those tasks using the following command:
+
+	task-mule <some-task-name>
+
+However if you want to make custom initialisation, event handling or more, you'll need to edit *mule.js*.
+
+Creating a new *mule.js* will give you the following template, which has stubs for you to fill out and comments for explanation:
+	
+	module.exports = function (config, validate) {
+	
+		// ... load npm modules here ...
+	
+		return {
+			//
+			// Describes options to the system.
+			// Fill this out to provide custom help when 'task-mule --help' 
+			// is executed on the command line.
+			//
+			options: [
+				['--some-option', 'description of the option'],
+			],
+	
+			//
+			// Examples of use.
+			// Fill this out to provide custom help when 'task-mule --help' 
+			// is executed on the command line.
+			//
+			examples: [
+				['What it is', 'example command line'],
+			],
+	
+			/* Uncomment this to provide your own custom logger.
+	
+			initLog: function () {
+	
+				var myLogger = {
+					verbose: function (msg) {
+						console.log(msg);					
+					},
+	
+					info: function (msg) {
+						console.log(msg);					
+					},
+	
+					warn: function (msg) {
+						console.log(msg);
+		
+					},
+	
+					error: function (msg) {
+						console.error(msg);
+					},
+				}
+	
+				return myLogger;
+			},
+			*/
+	
+			initConfig: function () {
+				// ... setup default config here ...
+			},
+	
+			init: function () {
+				// ... custom initialisation code here ... 
+			},
+	
+			unhandledException: function (err) {
+				// ... callback for unhandled exceptions thrown by your tasks ...
+			},
+	
+			taskStarted: function (taskInfo) {
+				// ... callback for when a task has started (not called for dependencies) ...
+			},
+	
+			taskSuccess: function (taskInfo) {
+				// ... callback for when a task has succeeed (not called for dependencies) ...
+			},
+	
+			taskFailure: function (taskInfo) {
+				// ... callback for when a task has failed (not called for dependencies) ...
+			},
+	
+			taskDone: function (taskInfo) {
+				// ... callback for when a task has completed, either failed or succeeed (not called for dependencies) ...
+			},
+	
+		};
+	};
+
+
+### Tasks file system structure
+
+### Task layout
 
 ### Task execution order
 
@@ -575,6 +668,17 @@ Mention what happens a task fails, it should short-circuit other tasks at the sa
 What are the other ways of specifing dependencies?
 
 ### Running dependencies manually
+
+
+### More on running commands
+
+todo: How does runCmd work exactly.
+runCmd is already promisified.
+What do you get delivered when runCmd resolves?
+What are the options for runCmd
+Why not just use exec/spawn?
+runCmd may not meet your needs, if not we encourgae you to roll your own version based on Node's low level fns.
+
 
 ### Advanced configuration
 
@@ -593,12 +697,6 @@ How is it triggered:
 What happens on failure?
 
 ### Scheduled Tasks
-
-### *mule.js* layout
-
-### Tasks file system structure
-
-### Task layout
 
 ### Task validation
 
