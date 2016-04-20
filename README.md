@@ -33,10 +33,10 @@ NOTE: This documention is currently under construction. Please check back again 
   - [Return values](#return-values)
   - [Converting callbacks to promises](#converting-callbacks-to-promises)
   - [*mule.js* layout](#mulejs-layout)
-  - [Tasks file system structure](#tasks-file-system-structure)
+  - [Task-Mule file system structure](#task-mule-file-system-structure)
   - [Task layout](#task-layout)
+  - [Task dependencies](#task-dependencies)
   - [Task execution order](#task-execution-order)
-  - [More on task dependencies](#more-on-task-dependencies)
   - [Running dependencies manually](#running-dependencies-manually)
   - [More on running commands](#more-on-running-commands)
   - [Advanced configuration](#advanced-configuration)
@@ -357,7 +357,7 @@ We can make a dependent task (let's called it *gen-build-info.js*) as follows:
 
 This example task is synthesizing a code file with a variable that is set to the current revision number of the repository. We do this kind of thing before the [code build](https://en.wikipedia.org/wiki/Software_build) step to *bake* the version number into our executable so that we can always indentify which code revision the build came from. 
 
-Note that in this example we aren't returning a promise. Because the task is synchronous rather than asyncrhous (due to our choice of using `readFileSync`) we don't need to return a promise. Task-Mule will just assume that this task was synchronous and that the operation has completed immediately. 
+Note that in this example we aren't returning a promise. Because the task is synchronous rather than asynchronous (due to our choice of using `readFileSync`) we don't need to return a promise. Task-Mule will just assume that this task was synchronous and that the operation has completed immediately. 
 
 Note that a task is automatically failed when it's downstream dependencies fail. This means that if *determine-revision-number* fails, it's dependent task *gen-build-info* will also fail.   
 
@@ -728,7 +728,7 @@ Here is the default task layout for your enjoyment:
 
 There are several ways to specify the dependencies for a task.
 
-The simplest one, that we have already seen is just an array of task names:
+The simplest one, that we have already seen, is just an array of task names:
 
 	dependsOn: [
 		"dependency-task-1",
@@ -756,7 +756,9 @@ Or:
 		return deps;
 	},
 
-This can be used in many interesting ways, for example conditionally building a dependency list based on configuration. For example, we conditionally switch on a *clean build* something like this:
+This can be used in many interesting ways, for example conditionally building a dependency list based on configuration. 
+
+For example, we conditionally enable a *clean build* something like this:
 
 	dependsOn: function (config) {
 		var isCleanBuild = config.get('clean');
@@ -771,11 +773,11 @@ This can be used in many interesting ways, for example conditionally building a 
 		return deps;
 	},
 
-This kind of thing allows you conditionally modify dependencies via the command line, the *clean* option for example is used like this:
+This kind of thing allows you to conditionally modify dependencies via the command line, the *clean* option for example is used like this:
 
-	task-mule build-my-code --clean
+	task-mule do-the-build --clean
 
-The `dependsOn` function, like all Task-Mule callbacks can return a promise when you need to run an asynchronous operation. The promise should be *resolved* to a list of task names. 
+The `dependsOn` function, like all Task-Mule callbacks, can return a promise when you need to run an asynchronous operation. The promise should be *resolved* to a list of task names. 
 
 	dependsOn: function (config) {
 		
@@ -791,8 +793,7 @@ As a contrived example, let's say you want to load your dependencies from a Mong
 	dependsOn: function (config) {
 
 		var someDbQuery = ...		
-		return db.myCollection.find(someDbQuery)
-			.toArray()
+		return db.myCollection.find(someDbQuery).toArray()
 			.then(function (dbDocuments) {
 				return dbDocuments.map(function (document) {
 					return document.taskName;
@@ -800,7 +801,7 @@ As a contrived example, let's say you want to load your dependencies from a Mong
 			});
 	};
 	 
-Crazy huh. Why would you want to load your dependencies from a database? I have no idea it's your automation script. Maybe I'll include a real example one day.
+Crazy yes. Why would you want to load your dependencies from a database? I have no idea it's your automation script. Maybe I'll include a real example one day.
 
 When the `dependsOn` function throws an exception or returns a `rejected` promise the task is failed. 
 
