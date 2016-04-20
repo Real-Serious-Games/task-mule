@@ -4,6 +4,8 @@ Yet another task runner for [NodeJS](https://nodejs.org/en/) .... why use [Grunt
 
 We have used both Grunt and Gulp. Gulp is a step up from Grunt. Actually Gulp is pretty good and we still use it for building web applications.
 
+You must be proficient at JavaScript to make the most of this tool. 
+
 NOTE: This documention is currently under construction. Please check back again soon for a completed version.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -722,14 +724,91 @@ Here is the default task layout for your enjoyment:
 	    };
 	};
 
+### Task dependencies
+
+There are several ways to specify the dependencies for a task.
+
+The simplest one, that we have already seen is just an array of task names:
+
+	dependsOn: [
+		"dependency-task-1",
+		"dependency-task-2",
+		"and-so-on",
+	],
+
+You can also use a function to dynamically generate the dependency list:
+
+	dependsOn: function (config) {
+		return [
+			"dependency-task-1",
+			"dependency-task-2",
+			"and-so-on",
+		];
+	},
+
+Or:
+
+	dependsOn: function (config) {
+		var deps = [];
+		deps.push("dependency-task-1");
+		deps.push("dependency-task-2");
+		deps.push("and-so-on");
+		return deps;
+	},
+
+This can be used in many interesting ways, for example conditionally building a dependency list based on configuration. For example, we conditionally switch on a *clean build* something like this:
+
+	dependsOn: function (config) {
+		var isCleanBuild = config.get('clean');
+		
+		var deps = [];
+		if (isCleanBuild) {
+			// Only delete previous buid output when the 'clean' option is used. 
+			deps.push("delete-the-build-output");
+		}
+
+		deps.push("build-the-code");
+		return deps;
+	},
+
+This kind of thing allows you conditionally modify dependencies via the command line, the *clean* option for example is used like this:
+
+	task-mule build-my-code --clean
+
+The `dependsOn` function, like all Task-Mule callbacks can return a promise when you need to run an asynchronous operation. The promise should be *resolved* to a list of task names. 
+
+	dependsOn: function (config) {
+		
+		var promise = ... some async operation ...
+
+		return promise;
+	};
+
+As a contrived example, let's say you want to load your dependencies from a MongoDB database using [promised-mongo](https://www.npmjs.com/package/promised-mongo):
+
+	var db = ... initalise a promised-mongo db ....
+
+	dependsOn: function (config) {
+
+		var someDbQuery = ...		
+		return db.myCollection.find(someDbQuery)
+			.toArray()
+			.then(function (dbDocuments) {
+				return dbDocuments.map(function (document) {
+					return document.taskName;
+				});			
+			});
+	};
+	 
+Crazy huh. Why would you want to load your dependencies from a database? I have no idea it's your automation script. Maybe I'll include a real example one day.
+
+When the `dependsOn` function throws an exception or returns a `rejected` promise the task is failed. 
+
 ### Task execution order
 
 todo: Show the order of task execution for dependencies.
 Mention what happens a task fails, it should short-circuit other tasks at the same level then fail all tasks moving up the tree.
 
-### More on task dependencies
-
-What are the other ways of specifing dependencies?
 
 ### Running dependencies manually
 
