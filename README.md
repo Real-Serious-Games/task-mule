@@ -6,6 +6,52 @@ We have used both Grunt and Gulp. Gulp is a step up from Grunt. Actually Gulp is
 
 NOTE: This documention is currently under construction. Please check back again soon for a completed version.
 
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+
+- [Why Task-Mule?](#why-task-mule)
+- [Features](#features)
+- [Use cases](#use-cases)
+- [Getting started - ultra quick](#getting-started---ultra-quick)
+- [Getting Started - the long version](#getting-started---the-long-version)
+  - [Installing Task-Mule CLI](#installing-task-mule-cli)
+  - [Create your first script](#create-your-first-script)
+  - [Creating your first task](#creating-your-first-task)
+  - [Running your task](#running-your-task)
+  - [Installing npm dependencies](#installing-npm-dependencies)
+  - [Configuration options](#configuration-options)
+  - [Failing a task](#failing-a-task)
+  - [Invoking a command](#invoking-a-command)
+  - [Specifying task dependencies](#specifying-task-dependencies)
+  - [Logging and validation](#logging-and-validation)
+  - [Validation](#validation)
+- [Advanced stuff](#advanced-stuff)
+  - [Why promises?](#why-promises)
+  - [More on running commands](#more-on-running-commands)
+  - [Task execution order](#task-execution-order)
+  - [More on task dependencies](#more-on-task-dependencies)
+  - [Running dependencies manually](#running-dependencies-manually)
+  - [Advanced configuration](#advanced-configuration)
+  - [Task failure](#task-failure)
+  - [Scheduled Tasks](#scheduled-tasks)
+  - [*mule.js* layout](#mulejs-layout)
+  - [Tasks file system structure](#tasks-file-system-structure)
+  - [Task layout](#task-layout)
+  - [Task validation](#task-validation)
+  - [Invoking Task-Mule from code](#invoking-task-mule-from-code)
+  - [Invoking Task-Mule from an automated test](#invoking-task-mule-from-an-automated-test)
+  - [Custom initialisation code](#custom-initialisation-code)
+  - [Bring your own logger](#bring-your-own-logger)
+  - [Custom handling for task success/failure](#custom-handling-for-task-successfailure)
+  - [Validation](#validation-1)
+  - [Task return values](#task-return-values)
+  - [Wrapping synchronous functions as promises](#wrapping-synchronous-functions-as-promises)
+  - [Implementing command line documentation for your script](#implementing-command-line-documentation-for-your-script)
+- [Future Plans](#future-plans)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 ## Why Task-Mule?
 
 So why Task-Mule? Task-Mule is a bit different. It is a task runner of course, but is not just for build scripts. It was designed for large automation jobs with complex dependencies between tasks.
@@ -366,9 +412,149 @@ There are various other validation functions available, please see the advanced 
 
 ### Why promises?
 
-Great way of managing async operations.
-Keeps things simple.
-If you don't like promises, I'm sorry then this isn't for you.
+Let's get this out of the way first: Why does Task-Mule rely on promises?
+
+Promises a great way of managing and simplifying async operations. I wanted to keeps things simple for Task-Mule, supporting both callbacks and promises would have added extra complexity to Task-Mule and subsequently this documentation.
+
+I'm sorry, If you don't like promises, this tool isn't for you.
+
+### Return values
+
+All of the functions in *mule.js* and the tasks can return promises, this allows Task-Mule to support asynchronous operations and to properly sequence tasks one after the other.
+
+You can also perform syncrhonous operations in a task and return nothing from the task. 
+
+What you can't do is perform a non-promise-based asynchronous operation and have Task-Mule respect that. If you do this then you do it outside the knowledge of Task-Mule and any dependent tasks will most-likely be invoked before the operation has completed.
+
+When you need to use your typical Node.js functions that invoke a callback you can easily convert them to promises...
+
+### Converting callbacks to promises
+
+Let's look at an example of converting a Node.js callback-based function to a promise.
+
+Here's an example of loading a file asynchronously:
+
+	var fs = require('fs');
+
+	var fileName = ...
+
+	fs.readFile(fileName, 'utf8', function (err, fileContent) {
+		if (err) {
+			// ... handle the error ...
+			return;
+		}
+
+		// ... file was loaded successfully ... 
+	});
+
+Of course get into trouble when we try to chain multiple asyncronous operations. 
+
+	var fileName1 = ...
+	var fileName2 = ...
+
+	fs.readFile(fileName1, 'utf8', function (err, fileContent1) {
+		if (err) {
+			// ... handle the error ...
+			return;
+		}
+
+		fs.readFile(fileName2, 'utf8', function (err, fileContent2) {
+			if (err) {
+				// ... handle the error ...
+				return;
+			}
+	
+			// ... both files were loaded successfully ... 
+		});
+	});
+
+
+This are heading towards *callback hell*. Promises solves this nicely by allowing us to unwind the nesting and chain asynchronous operations. For example, *if* the `readFile` function returned a promise instead of invoking a callback we could rewrite the previous example as follows:
+ 
+	fs.readFile(fileName1, 'utf8')
+		.then(function (fileContent1) {
+			return fs.readFile(fileName2, 'utf8');
+		}) 
+		.then(function (fileContent2) {
+			// ... both files were loaded successfully ...			
+		})
+		.catch(function (err) {
+			// ... handle the error ...
+		});		
+
+The promises example is easier to read and understand. Unfortunately Node.js functions don't return promises, so we must wrap them manually. This is easy to achive:
+
+	var readFilePromise = function (fileName) {
+		return new Promise(function (resolve, reject) {
+			fs.readFile(fileName, 'utf8', function (err, fileContent) {
+				if (err) {
+					reject(err);
+					return;
+				}
+
+				resolve(fileContent);
+			});
+		});
+	}
+
+When we call `readFilePromise` we get back a promise that will be *resolved* with the file contents if the file was loaded successfully, otherwise it will be *rejected* with the error that ocurred.
+
+Now let's rewrite the previous example with our new helper function:
+
+	readFilePromise(fileName1)
+		.then(function (fileContent1) {
+			return readFilePromise(fileName2);
+		}) 
+		.then(function (fileContent2) {
+			// ... both files were loaded successfully ...			
+		})
+		.catch(function (err) {
+			// ... handle the error ...
+		});		
+
+Of course you could just use one of the many *promisify* librarys that do convert callback functions to promise functions for you. For example, *[promisify-node](https://www.npmjs.com/package/promisify-node)* allows you to convert all the fs functions at once, then you you really can just treat node functions as though they return promises:
+
+	var promisify = require("promisify-node");
+	var fs = promisify("fs");
+
+	fs.readFile(fileName1, 'utf8')
+		.then(function (fileContent1) {
+			return fs.readFile(fileName2, 'utf8');
+		}) 
+		.then(function (fileContent2) {
+			// ... both files were loaded successfully ...			
+		})
+		.catch(function (err) {
+			// ... handle the error ...
+		});		
+
+Let's look at a Task-Mule task that asynchronously loads a text file and stores it in config:
+
+**Note:** this is a complete example, but you can make things easier for yourself by making a helper function or using *promisify* as described above.
+
+	module.exports = function (log, validate) {
+
+		var fs = require('fs');
+
+	    return {
+
+	        invoke: function (config) {
+
+				return new Promise(function (resolve, reject) {
+					fs.readFile('SomeImportantFile.txt', 'utf8', 
+						function (err, fileContent) {
+							if (err) {
+								reject(err);
+								return;
+							}
+
+							config.set('SomeImportantFile', fileContent);
+						}
+					);
+				});
+	        },
+	    };
+	};
 
 ### More on running commands
 
@@ -431,16 +617,6 @@ todo: Give an example using structured-log to output your task results to a data
 ### Custom handling for task success/failure
 
 ### Validation
-
-### Task return values
-
-Promises or not?
-
-### Wrapping synchronous functions as promises
-
-Common mistake: start a non-promise node async operation and don't resolve the promise. 
-
-todo: Could mention 'promisify here
 
 ### Implementing command line documentation for your script
 
