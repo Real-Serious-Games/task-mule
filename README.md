@@ -868,7 +868,61 @@ Consider the example sequence of tasks from the previous section. Let's say *sub
 
 Note the tasks that have already run, that is everything before *sub-dependency3* have already run and so are not effected by the failure of *sub-dependency3*.
 
+### Task validation
+
+todo: Talk about why the validate function was separated from the invoke function.
+todo: validation is normally run before any tasks are invoked... except when running deps manually.
+
 ### Running dependencies manually
+
+Dependencies are normally specified via the *dependsOn* field of the task. You can also invoke dependencies manually. You might want to do this to have more control. 
+
+To make use of this use the `taskRunner` that is passed to the task module:
+
+	module.exports = function (log, validate, taskRunner) {
+	    
+	    return {
+	        
+	        invoke: function (config) {
+
+				var configOverrides = {
+					//... Override config values ... 
+				}
+	            
+				// Manually invoke a dependency.
+				return taskRunner.runTask('my-dependency', config, configOverrides)
+					.then(function () {
+						// Dependency completed successfully...
+
+						// ... now do the action of this task ...
+					});				
+	        },
+	    };
+	};
+
+`runTask` returns a promise. Use `catch` to handle errors manually or discard them entirely:
+
+	module.exports = function (log, validate, taskRunner) {
+	    
+	    return {
+	        
+	        invoke: function (config) {
+
+				var configOverrides = {
+					//... Override config values ... 
+				}
+	            
+				// Manually invoke a dependency.
+				return taskRunner.runTask('my-dependency', config, configOverrides)
+					.then(function () {
+						// ... now do the action of this task ...
+					})
+					.catch(function (err) {
+						// ... handle the failure of the dependency however you want ...
+					});
+	        },
+	    };
+	};
 
 
 ### More on running commands
@@ -890,9 +944,6 @@ Link to Confucious.
 
 ### Scheduled Tasks
 
-### Task validation
-
-todo: Talk about why the validate function was separated from the invoke function.
 
 ### Invoking Task-Mule from code
 
