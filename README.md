@@ -677,7 +677,7 @@ A Task-Mule automation script is structured in the file system as follows.
 
 ### Task layout
 
-Run the following commmand to create a new task with the default layout:
+Run the following command to create a new task with the default layout:
 
 	task-mule create-task <new-task-name>
 
@@ -807,9 +807,66 @@ When the `dependsOn` function throws an exception or returns a `rejected` promis
 
 ### Task execution order
 
-todo: Show the order of task execution for dependencies.
-Mention what happens a task fails, it should short-circuit other tasks at the same level then fail all tasks moving up the tree.
+When a task is requested to be executed, either from the command line or as a dependency of some other task, it's dependencies will run first in the order specified by the task's `dependsOn` function.
 
+For example, consider *task-A*:
+
+	module.exports = function (log, validate) {
+	    
+	    return {
+	        
+	        dependsOn: [
+				"dependency1",
+				"dependency2",
+			], 
+	
+	        invoke: function (config) {
+	            // ... do the action of the task ...
+	        },
+	    };
+	};
+ 
+The order of tasks invoked is as follows:
+
+1. dependency1
+2. dependency2
+3. task-A
+
+When dependencies have sub-dependencies, the sub-dependencies are run in the order specified before the dependency is executed.
+
+For example, say *dependency1* from the previous example has dependencies *sub-dependency1* and *sub-dependency-2* and *dependency2* has *sub-dependency3* and *sub-dependency-4*, then the order of task is as follows:
+
+1. sub-dependency1
+2. sub-dependency2
+3. dependency1
+4. sub-dependency3
+5. sub-dependency4
+6. dependency2
+7. task-A
+
+What is being done here is a *[depth-first post-order traversal](https://en.wikipedia.org/wiki/Tree_traversal#Depth-first_search)* of the task tree, executing each task as each node in the tree is visited.
+
+### Task failure
+
+Failure of a task is triggered by any of the following events that occur in any of the task's functions:
+
+- An exception is thrown;
+- The returned promise is rejected; or
+- An unhandled exception occurs while a task is running.
+
+When a task fails all further processing by the task is aborted. In addition execution of subsequent tasks are are also aborted. We can say that task failure *short-circuits* out of the sequence of tasks.
+
+Consider the example sequence of tasks from the previous section. Let's say *sub-dependency3* fails. None of the tasks after *sub-dependency3* will run in this case:
+
+1. (**success**) sub-dependency1
+2. (**success**) sub-dependency2
+3. (**success**) dependency1
+4. (**fails and aborts**) sub-dependency3
+5. (**never runs**) sub-dependency4
+6. (**never runs**) dependency2
+7. (**never runs**) task-A
+
+Note the tasks that have already run, that is everything before *sub-dependency3* have already run and so are not effected by the failure of *sub-dependency3*.
 
 ### Running dependencies manually
 
@@ -830,15 +887,6 @@ Config overrides.
 Setting config.
 Stacking config.
 Link to Confucious.
-
-### Task failure
-
-How is it triggered:
-- exception
-- rejected promise
-- unhandled exception
-
-What happens on failure?
 
 ### Scheduled Tasks
 
