@@ -870,8 +870,39 @@ Note the tasks that have already run, that is everything before *sub-dependency3
 
 ### Task validation
 
-todo: Talk about why the validate function was separated from the invoke function.
-todo: validation is normally run before any tasks are invoked... except when running deps manually.
+Tasks are validated via the `validate` function.
+
+	module.exports = function (log, validate) {
+	    
+	    return {
+	        
+	        validate: function (config) {
+	            // ... validate input to the task ...
+
+				//
+				// To fail the task: throw an exception or return a rejected promise.
+				//
+	        },
+	
+	        invoke: function (config) {
+	            // ... do the action of the task ...
+	        },
+	    };
+	};
+
+Like other other task functions `validate` can return a promise if validation needs to be asynchronous.
+
+To fail a task throw an exception or return a *rejected* promise. 
+
+Validation for a sequence of tasks is run before any of the tasks are *invoked*. This allows the entire automation script to quickly check that it's configuration and inputs are correct before it does any work. The reason for this is to have quick feedback. No one likes to have to wait for a significant amount of time (say while a build is running) before the script fails due to a configuration or input error. So validation runs first for all tasks that will be invoked. This ensure the script will fail fast when there is a user error.
+
+If you have some validation that is dependent on input from previous tasks in the sequence, say tasks that add their output to the configuration, you should perform validation on configuration that is generated in the *invoke* function. 
+
+The task is passed the *validate* parameter, this has some convenient helper functions for validation:
+
+- `var value = validate.config(<config>, <config-name>)` - Verify that a specified named value exists in the configuration. This also returns the value, which you can use for further validation. Fails the task if the requested value does not exist. 
+- `validate.directoryExists(<path>)` - Verify that a directory already exists. Fails the task if that directory doesn't exist.
+- `validate.fileExists(<path>)` - Verify that a file already exists. Fails the task if that file doesn't exist.
 
 ### Running dependencies manually
 
