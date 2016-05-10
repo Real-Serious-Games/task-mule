@@ -386,7 +386,7 @@ See the advanced section if you want to *bring your own logger*.
 
 ### Validation
 
-Tasks also have a `validate` parameter that provides a number of convenice functions for validation of configuration and system state. To validate input to your task you should implemented the task's `validate` function.
+Tasks also have a `validate` parameter that provides a number of convenience functions for validation of configuration and system state. To validate input to your task you should implemented the task's `validate` function.
 
 As an example let's check that the correct configuration is present for the earlier ssh example: 
 
