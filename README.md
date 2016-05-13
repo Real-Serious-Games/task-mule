@@ -958,13 +958,20 @@ To make use of this use the `taskRunner` that is passed to the task module:
 
 ### More on running commands
 
-todo: How does runCmd work exactly.
-runCmd is already promisified.
-What do you get delivered when runCmd resolves?
-What are the options for runCmd
-Why not just use exec/spawn?
-runCmd may not meet your needs, if not we encourgae you to roll your own version based on Node's low level fns.
+Use `runCmd` to invoke a command, executable or batch file. An example is presented earlier in this documentation. `runCmd` returns a promise, so it works well with Task-Mule tasks.
 
+`runCmd` is simply for convenience. It is built on the Node.js `spawn` function and is setup to redirect standard output and standard error to Task-Mule output. This output is only displayed either when the *--verbose* command line option is used or when an error occurs.  
+
+The promise returned by `runCmd` is resolved when the process being run has finished. By default the promise is rejected if the process completes with an error code. You can set the `dontFailOnError` option to true if the promise should be resolved even if the process fails:
+
+	var options = { 
+		dontFailOnError: true 
+	};
+	runCmd('something-that-might-fail', args, options);
+
+The other options that are passed to `runCmd` are also passed to `spawn`, so `runCmd` accepts all the same options as `spawn`.
+
+You don't have to use `runCmd`. Feel free to [Node.js process functions](https://nodejs.org/api/child_process.html) directly or whatever other functions will do the job for you. Just remember that you will need to *promisify* any asynchronous operations.
 
 ### Advanced configuration
 
