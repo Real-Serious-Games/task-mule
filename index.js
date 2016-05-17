@@ -244,6 +244,11 @@ module.exports = function (config) {
 
 		global.runCmd = require('./run-cmd')(log);
 
+		if (!requestedTaskName) {
+			console.log(chalk.bold.red("Expected parameter: task-mule <task-name>"));
+			process.exit(1);
+		}
+
 		if (requestedTaskName === 'schedule') {
 			commandSchedule(config, buildConfig, log);
 			return;
