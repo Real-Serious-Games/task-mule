@@ -298,7 +298,7 @@ Second example:
 
 ### Invoking a command
 
-Task-Mule includes a special helper function `runCmd` to help you run system commands and marshal the results back into the build script. 
+Task-Mule includes a special global helper function `runCmd` to help you run system commands and marshal the results back into the build script. 
 
 In this example we'll run the command `hg id --num` which determines the current revision number of the [*Mercurial*](https://en.wikipedia.org/wiki/Mercurial) [repository](https://en.wikipedia.org/wiki/Repository_(version_control)) we happen to be. This kind of thing is useful in build scripts because you often want to *stamp* the number of the current code revision into the build somehow. 
 
