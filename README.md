@@ -943,7 +943,7 @@ To make use of this use the `taskRunner` that is passed to the task module:
 
 				var configOverrides = {
 					//... Override config values ... 
-				}
+				};
 	            
 				// Manually invoke a dependency.
 				return taskRunner.runTask('my-dependency', config, configOverrides)
@@ -977,10 +977,72 @@ You don't have to use `runCmd`. Feel free to [Node.js process functions](https:/
 
 ### Advanced configuration
 
-Config overrides.
-Setting config.
-Stacking config.
-Link to Confucious.
+Task-Mule relies on [Confucious](https://www.npmjs.com/package/confucious) for managing it's configuration. This gives you much flexibility in how you configure Task-Mule.
+
+By default Task-Mule automatically wires in environment variables and command line parameters. You can set configuration options in *mule.js*. You can put configuration options in *config.json*. You can set global configuration options from tasks. You can also *override* the configuration for manually invoked tasks. 
+
+This is the hierarchy of configuration options:
+
+- Global options.
+- Environment variables.
+- *Config.json*
+- Configuration setup in *mule.json* `initConfig`.
+- Command line options.
+- Configuration setup in *mule.json* `init`.
+- Configuration set while running tasks.
+- Configuration overrides for specific tasks.
+
+Let's look at some examples.
+
+Say you have an environment variable set. You can do this in a Windows shell as follows:
+
+	set my_option=5
+
+Now you can read this option in a task:
+
+	var myOption = config.get('my_option');
+
+You can set a default for this option in *mule.js* `initConfig`:
+
+	initConfig: function () {
+		
+		var defaultConfig = {
+			my_option: 10
+		};
+		config.push(defaultConfig);
+	}	
+
+The default can be overriden in *config.json*:
+
+	{
+		"my_option": 10
+	}
+
+You can also override from the command line:
+
+	task-mule my-task --my_option=12
+
+Dependency tasks have their own private configuration space. This is achieved by using Confucious to push a new entry on the configuration stack for each dependent task. That private space is wiped out when the dependency task has completed. This means that any tasks that use `config.set` to set a configuration variables will have those variables wiped out. Tasks that want to use configuration to communicate to other tasks must use *config.setGlobal*. This will change configuration values at the bottom level of the configuration stack. This should be used with care! You might wipe out configuration that is needed by other tasks! Also globals are overriden by every other level of the stack! So you may not get the behaviour you hoped.
+
+Dependent tasks can communicate private configuration to dependency tasks using *configuration overrides*.
+
+When running tasks manually (full example shown earlier) you can override configuration just for a single task instance:
+
+	var configOverrides = {
+		my_option: 42 
+	};
+    
+	return taskRunner.runTask('my-task', config, configOverrides)
+		.then(function () {
+			// ... dependency task complete ...
+		})
+		.catch(function (err) {
+			// ... handle the failure ...
+		});
+
+By running tasks manually and using config overrides you can easily invoke a single task many times with different configuration each time.
+
+For example you might have a task that provision virtual machines. Let's call that task *provision-vm*. Part of it's config is the name of the VM to provision, etc. Then define another task, for example, called *provision-vms*. This task can invoke *provision-vm* for as many VMs as you need, each with it's on custom configuration.
 
 ### Scheduled Tasks
 
