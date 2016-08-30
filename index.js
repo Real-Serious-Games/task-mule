@@ -142,7 +142,6 @@ var commandRunTask = function (config, buildConfig, log, requestedTaskName) {
 	assert.isFunction(log.error);
 	assert.isFunction(log.info);
 	assert.isFunction(log.warn);
-	assert.isString(requestedTaskName);
 
 	initConfig(config, buildConfig, log);
 
@@ -185,29 +184,35 @@ var commandRunTask = function (config, buildConfig, log, requestedTaskName) {
 			});
 	} 
 	else {
-	    log.info("Usage: task-mule <task-name> [options]\n");
-
-	    var optionsTable = new AsciiTable('Options');
-	    optionsTable
-	      .setHeading('Options', 'Description');
-
-	    buildConfig.options.forEach(function (option) {
-	        optionsTable.addRow(option[0], option[1]);
-	    });
-
-	    console.log(chalk.bold.green(optionsTable.toString()));
-
-	    var examplesTable = new AsciiTable('Examples');
-	    examplesTable.setHeading('What?', 'Command Line');
-
-	     buildConfig.examples.forEach(function (example) {
-	     	examplesTable.addRow(example[0], example[1]);
-	     });
-
-	    console.log(chalk.bold.green(examplesTable.toString()));
-
-	    process.exit(1);
+		throw new Error("Unexpected usage of task-mule.");
 	}
+};
+
+//
+// Display usage and help.
+//
+var displayHelp = function (buildConfig, log) {
+
+	log.info("Usage: task-mule <task-name> [options]\n");
+
+	var optionsTable = new AsciiTable('Options');
+	optionsTable
+		.setHeading('Options', 'Description');
+
+	buildConfig.options.forEach(function (option) {
+		optionsTable.addRow(option[0], option[1]);
+	});
+
+	console.log(chalk.bold.green(optionsTable.toString()));
+
+	var examplesTable = new AsciiTable('Examples');
+	examplesTable.setHeading('What?', 'Command Line');
+
+		buildConfig.examples.forEach(function (example) {
+		examplesTable.addRow(example[0], example[1]);
+		});
+
+	console.log(chalk.bold.green(examplesTable.toString()));
 };
 
 module.exports = function (config) {
@@ -244,8 +249,12 @@ module.exports = function (config) {
 
 		global.runCmd = require('./run-cmd')(log);
 
-		if (!requestedTaskName) {
+		if (!requestedTaskName && !argv.tasks) {
 			console.log(chalk.bold.red("Expected parameter: task-mule <task-name>"));
+			console.log(chalk.bold.yellow("To list tasks: task-mule --tasks"));
+			console.log();
+
+			displayHelp(buildConfig, log);
 			process.exit(1);
 		}
 
