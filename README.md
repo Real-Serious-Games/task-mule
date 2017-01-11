@@ -6,8 +6,6 @@ We have used both Grunt and Gulp. Gulp is a step up from Grunt. Actually Gulp is
 
 You must be proficient at JavaScript to make the most of this tool. 
 
-NOTE: This documention is currently under construction. Please check back again soon for a completed version.
-
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
@@ -79,7 +77,8 @@ Task-Mule relies on [npm](https://www.npmjs.com/). Install the dependencies you 
 
 We use Task-Mule for:
 
-- Our Unity build script;
+- Our Unity3d build script;
+- Create new Unity3d projects from a template project;
 - Server deployment (see [basic example](https://github.com/ashleydavis/NodeJS-Skeleton) on github);
 - Scheduling automated tasks (eg for scraping data).
 
@@ -233,15 +232,15 @@ The previous example can be improved by wiring in external configuration.
 Let's see what that looks like:
 
 	module.exports = function (log, validate) {
-	    
+
 		var SshClient = require('ssh-promise');
 
-	    return {
-	        
-	        // ... other task fields ...
-	        
-	        invoke: function (config) {
-	            
+		return {
+
+			// ... other task fields ...
+
+			invoke: function (config) {
+
 				var sshConfig = {
 					host: config.get('host'),
 					username: config.get('username'),
@@ -250,8 +249,8 @@ Let's see what that looks like:
 
 				var ssh = new SshClient(sshConfig);
 				return ssh.exec('... some script to run on remote machine ...');
-	        },
-	    };
+			},
+		};
 	};
 
 In this example we are calling `config.get` to pull some external configuration into our task. 
@@ -279,7 +278,7 @@ First example:
 	        invoke: function (config) {
 
 				var someRejectedPromise = ... promise is rejected for some reason ...
-	            
+
 				return someRejectedPromise;
 	        },
 	    };
@@ -306,9 +305,9 @@ In this example we'll run the command `hg id --num` which determines the current
 
 	module.exports = function (log, validate) {
 
-	    return {
-	        
-	        invoke: function (config) {
+		return {
+
+			invoke: function (config) {
 
 				var cmd = 'hg';
 				var args = ['id', '--num'];
@@ -318,8 +317,8 @@ In this example we'll run the command `hg id --num` which determines the current
 						var versionNo = parseInt(cmdResult.stdOut.trim());
 						config.set('version', versionNo); 
 					});
-	        },
-	    };
+			},
+		};
 	};
 
 This example parses the output from the `hg` command and sets it into the configuration for use by dependent tasks. 	
@@ -336,13 +335,13 @@ We can make a dependent task (let's called it *gen-build-info.js*) as follows:
 
 		var fs = require('fs');
 
-	    return {
+		return {
 
 			dependsOns: [
 				"determine-revision-number",	
 			],
-	        
-	        invoke: function (config) {
+
+			invoke: function (config) {
 
 				var versionNo = config.get('version');
 
@@ -353,8 +352,8 @@ We can make a dependent task (let's called it *gen-build-info.js*) as follows:
 					"}";
 
 				fs.writeFileSync("BuildInfo.cs", fileToOutput); 
-	        },
-	    };
+			},
+		};
 	};
 
 This example task is synthesizing a code file with a variable that is set to the current revision number of the repository. We do this kind of thing before the [code build](https://en.wikipedia.org/wiki/Software_build) step to *bake* the version number into our executable so that we can always indentify which code revision the build came from. 
@@ -394,19 +393,19 @@ As an example let's check that the correct configuration is present for the earl
 
 	module.exports = function (log, validate) {
 
-	    return {
+		return {
 
 			validate: function (config) {
 				validate.config('host', config);
 				validate.config('username', config);
 				validate.config('password', config);
 			},
-	        
-	        invoke: function (config) {
+
+			invoke: function (config) {
 
 				... run the task ... 
-	        },
-	    };
+			},
+		};
 	};
 
 This simply checks that the configuration expected for the ssh task is present and if not validation and therefore the task is failed.
@@ -541,9 +540,9 @@ Let's look at a Task-Mule task that asynchronously loads a text file and stores 
 
 		var fs = require('fs');
 
-	    return {
+		return {
 
-	        invoke: function (config) {
+			invoke: function (config) {
 
 				return new Promise(function (resolve, reject) {
 					fs.readFile('SomeImportantFile.txt', 'utf8', 
@@ -557,8 +556,8 @@ Let's look at a Task-Mule task that asynchronously loads a text file and stores 
 						}
 					);
 				});
-	        },
-	    };
+			},
+		};
 	};
 
 ### *mule.js* layout
@@ -672,9 +671,9 @@ A Task-Mule automation script is structured in the file system as follows.
 			task1.js					-> Each task lives in it's own file 
 			task2.js					   and is named after that file.
 			subdir/
-				nested-task.js			-> Tasks can even be nested under sub-directories
+				nested-task.js 			-> Tasks can even be nested under sub-directories
 										   to help group and organise your tasks.
-		some-other-file.js				-> Include any other JavaScript files and require
+		some-other-file.js 				-> Include any other JavaScript files and require
 										   them into your script.
 
 ### Task layout
@@ -688,42 +687,42 @@ This creates a new task file in the tasks directory with the following name: <ne
 Here is the default task layout for your enjoyment: 
 
 	module.exports = function (log, validate) {
-	    
-	    return {
-	        
-	        description: "<description of your task>",
-	        
-	        // Tasks that this one depends on (these tasks will run before this one).
-	        dependsOn: [
+
+		return {
+
+			description: "<description of your task>",
+
+			// Tasks that this one depends on (these tasks will run before this one).
+			dependsOn: [
 				// ... list of dependencies ...
 			], 
-	
-	        //
-	        // Validate configuration for the task.
-	        // Throw an exception to fail the build.
-	        //
-	        validate: function (config) {
-	            // ... validate input to the task ...
-	        },
-	
-	        //
-	        // Configure prior to invoke dependencies for this task.
-	        //
-	        configure: function (config) {
-	            // ... modify configuration prior to invoking dependencies ...
-	        },
-	        
-	        //
-	        // Invoke the task. Peform the operations required of the task.
-	        // Return a promise for async tasks.
-	        // Throw an exception or return a rejected promise to fail the task.
-	        //
-	        invoke: function (config) {
-	            // ... do the action of the task ...
-	
-	            // ... return a promise for asynchronous tasks ...
-	        },
-	    };
+
+			//
+			// Validate configuration for the task.
+			// Throw an exception to fail the build.
+			//
+			validate: function (config) {
+				// ... validate input to the task ...
+			},
+
+			//
+			// Configure prior to invoke dependencies for this task.
+			//
+			configure: function (config) {
+				// ... modify configuration prior to invoking dependencies ...
+			},
+
+			//
+			// Invoke the task. Peform the operations required of the task.
+			// Return a promise for async tasks.
+			// Throw an exception or return a rejected promise to fail the task.
+			//
+			invoke: function (config) {
+				// ... do the action of the task ...
+
+				// ... return a promise for asynchronous tasks ...
+			},
+		};
 	};
 
 ### Task dependencies
@@ -814,18 +813,18 @@ When a task is requested to be executed, either from the command line or as a de
 For example, consider *task-A*:
 
 	module.exports = function (log, validate) {
-	    
-	    return {
-	        
-	        dependsOn: [
+
+		return {
+
+			dependsOn: [
 				"dependency1",
 				"dependency2",
 			], 
-	
-	        invoke: function (config) {
-	            // ... do the action of the task ...
-	        },
-	    };
+
+			invoke: function (config) {
+				// ... do the action of the task ...
+			},
+		};
 	};
  
 The order of tasks invoked is as follows:
@@ -875,21 +874,21 @@ Note the tasks that have already run, that is everything before *sub-dependency3
 Tasks are validated via the `validate` function.
 
 	module.exports = function (log, validate) {
-	    
-	    return {
-	        
-	        validate: function (config) {
-	            // ... validate input to the task ...
+
+		return {
+
+			validate: function (config) {
+				// ... validate input to the task ...
 
 				//
 				// To fail the task: throw an exception or return a rejected promise.
 				//
-	        },
-	
-	        invoke: function (config) {
-	            // ... do the action of the task ...
-	        },
-	    };
+			},
+
+			invoke: function (config) {
+				// ... do the action of the task ...
+			},
+		};
 	};
 
 Like other other task functions `validate` can return a promise if validation needs to be asynchronous.
@@ -913,15 +912,15 @@ Dependencies are normally specified via the *dependsOn* field of the task. You c
 To make use of this use the `taskRunner` that is passed to the task module:
 
 	module.exports = function (log, validate, taskRunner) {
-	    
-	    return {
-	        
-	        invoke: function (config) {
+
+		return {
+
+			invoke: function (config) {
 
 				var configOverrides = {
 					//... Override config values ... 
 				}
-	            
+
 				// Manually invoke a dependency.
 				return taskRunner.runTask('my-dependency', config, configOverrides)
 					.then(function () {
@@ -929,22 +928,22 @@ To make use of this use the `taskRunner` that is passed to the task module:
 
 						// ... now do the action of this task ...
 					});				
-	        },
-	    };
+			},
+		};
 	};
 
 `runTask` returns a promise. Use `catch` to handle errors manually or discard them entirely:
 
 	module.exports = function (log, validate, taskRunner) {
-	    
-	    return {
-	        
-	        invoke: function (config) {
+
+		return {
+
+			invoke: function (config) {
 
 				var configOverrides = {
 					//... Override config values ... 
 				};
-	            
+
 				// Manually invoke a dependency.
 				return taskRunner.runTask('my-dependency', config, configOverrides)
 					.then(function () {
@@ -953,8 +952,8 @@ To make use of this use the `taskRunner` that is passed to the task module:
 					.catch(function (err) {
 						// ... handle the failure of the dependency however you want ...
 					});
-	        },
-	    };
+			},
+		};
 	};
 
 
@@ -1044,35 +1043,3 @@ By running tasks manually and using config overrides you can easily invoke a sin
 
 For example you might have a task that provision virtual machines. Let's call that task *provision-vm*. Part of it's config is the name of the VM to provision, etc. Then define another task, for example, called *provision-vms*. This task can invoke *provision-vm* for as many VMs as you need, each with it's on custom configuration.
 
-### Scheduled Tasks
-
-
-### Invoking Task-Mule from code
-
-### Invoking Task-Mule from an automated test
-
-### Custom initialisation code
-
-### Bring your own logger
-
-todo: Give an example using structured-log to output your task results to a database.
-
-### Custom handling for task success/failure
-
-### Validation
-
-### Implementing command line documentation for your script
-
-todo: This is kind of like reflection. Documenting your script and tasks so that users can query it from the command line to work out what it can do and how to use it.
-Really need to be able to query an individual task for what it does.
-
-### Testing tasks from the command line
-
-### Testing tasks from Mocha
-
-## Future Plans
-
-- Direct support for Gulp plugins in Task-Mule.
-- Install complete Task-Mule tasks directly from npm.
-- More advanced ways of passing configuration between tasks.
-- Pipelines of tasks where one task feeds data into the next.
