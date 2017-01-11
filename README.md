@@ -35,20 +35,11 @@ You must be proficient at JavaScript to make the most of this tool.
   - [Task layout](#task-layout)
   - [Task dependencies](#task-dependencies)
   - [Task execution order](#task-execution-order)
+  - [Task failure](#task-failure)
+  - [Task validation](#task-validation)
   - [Running dependencies manually](#running-dependencies-manually)
   - [More on running commands](#more-on-running-commands)
   - [Advanced configuration](#advanced-configuration)
-  - [Task failure](#task-failure)
-  - [Scheduled Tasks](#scheduled-tasks)
-  - [Task validation](#task-validation)
-  - [Invoking Task-Mule from code](#invoking-task-mule-from-code)
-  - [Invoking Task-Mule from an automated test](#invoking-task-mule-from-an-automated-test)
-  - [Custom initialisation code](#custom-initialisation-code)
-  - [Bring your own logger](#bring-your-own-logger)
-  - [Custom handling for task success/failure](#custom-handling-for-task-successfailure)
-  - [Validation](#validation-1)
-  - [Implementing command line documentation for your script](#implementing-command-line-documentation-for-your-script)
-- [Future Plans](#future-plans)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
