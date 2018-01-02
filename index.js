@@ -164,17 +164,18 @@ var commandRunTask = function (config, buildConfig, log, requestedTaskName) {
                 else {
                     log.warn('no stack');
                 }
-                if (!config.noExit) {
+				
+				if (!config.noExit) {
                 	process.exit(1);
-                }
-
-                buildConfig.done();
+				}
+				
+				runDoneCallback(buildConfig);
 
                 throw err;
             })
 	        .then(function () {
-        		buildConfig.done();
-	        });
+				runDoneCallback(buildConfig);
+            });
 	}
 	else if (argv.tasks) {
 	    return taskRunner.resolveAllDependencies(conf)
@@ -187,6 +188,17 @@ var commandRunTask = function (config, buildConfig, log, requestedTaskName) {
 		throw new Error("Unexpected usage of task-mule.");
 	}
 };
+
+//
+// Run config done callback.
+//
+var runDoneCallback = function (buildConfig) {
+
+	if (buildConfig.done) {
+		assert.isFunction(buildConfig.done);
+		buildConfig.done();
+	}
+}
 
 //
 // Display usage and help.

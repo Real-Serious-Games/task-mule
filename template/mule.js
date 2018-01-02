@@ -77,5 +77,8 @@ module.exports = function (config, validate) {
 			// ... callback for when a task has completed, either failed or succeeed (not called for dependencies) ...
 		},
 
+		done: function () {
+			// ... callback for when all tasks have been completed, either failed or succeeded ...
+		}
 	};
 };
