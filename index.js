@@ -52,7 +52,7 @@ var commandCreateTask = function (config) {
 		newTaskName += ".js";
 	}
 
-	var newTaskFilePath = path.join(config.tasksDirectory, newTaskName);
+	var newTaskFilePath = path.join(config.tasksDir, newTaskName);
 	if (fs.existsSync(newTaskFilePath)) {
 		consoleLog.error("Can't create task, file already exists: " + newTaskFilePath);
 		process.exit(1);
