@@ -1,4 +1,4 @@
-# Task-Mule
+# Task-Mule [![npm](https://img.shields.io/npm/v/npm.svg)]()
 
 Yet another task runner for [NodeJS](https://nodejs.org/en/) .... why use [Grunt](http://gruntjs.com/) or [Gulp](http://gulpjs.com/) when you can write your own?
 
