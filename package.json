@@ -41,8 +41,7 @@
     "promise": "^7.0.1",
     "q": "^1.4.1",
     "quote": "^0.4.0",
-    "statman": "^0.1.5",
-    "statman-stopwatch": "^1.0.4",
+    "statman-stopwatch": "^2.7.0",
     "string": "^3.3.0",
     "sugar": "^1.4.1",
     "yargs": "^3.10.0"
